@@ -157,6 +157,29 @@
         <tr><td colspan="6" class="text-center">Cargando candidatos...</td></tr>
       </tbody>
     </table>
+
+    <div id="old-candidates-wrapper" style="display: none; margin-top: 3rem;">
+      <button onclick="document.getElementById('old-candidates-container').classList.toggle('hidden')" class="btn btn-outline w-full" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.02); border: 1px dashed rgba(0,0,0,0.2);">
+        <span id="old-candidates-title"><i class="fas fa-archive mr-2"></i> Candidatos inactivos (>60 días)</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div id="old-candidates-container" class="hidden mt-4">
+        <table class="candidates-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Contacto</th>
+              <th>Etapa Actual</th>
+              <th>POP Score</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="old-candidates-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Modal Detalles del Candidato -->
@@ -255,12 +278,21 @@
 
     function renderTable() {
       const tbody = document.getElementById('candidates-body');
+      const tbodyOld = document.getElementById('old-candidates-body');
+      const oldWrapper = document.getElementById('old-candidates-wrapper');
+      const oldTitle = document.getElementById('old-candidates-title');
+
       tbody.innerHTML = '';
+      tbodyOld.innerHTML = '';
 
       if (allCandidates.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay candidatos registrados.</td></tr>';
+        oldWrapper.style.display = 'none';
         return;
       }
+
+      const now = new Date();
+      let oldCandCount = 0;
 
       allCandidates.forEach(cand => {
         let popBadge = '<span class="badge-pop badge-gris">N/A</span>';
@@ -269,17 +301,49 @@
           popBadge = `<span class="badge-pop badge-${color}">${cand.resultadoPOP.color} (${cand.resultadoPOP.porcentaje}%)</span>`;
         }
 
+        let startDateStr = 'Fecha desconocida';
+        let daysSince = 0;
+        if (cand.createdAt) {
+          const dateObj = cand.createdAt.toDate ? cand.createdAt.toDate() : new Date(cand.createdAt.seconds * 1000);
+          startDateStr = dateObj.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+          const diffTime = Math.abs(now - dateObj);
+          daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        }
+
+        const isAdvanced = cand.etapaActual >= 7;
+        const rowStyle = isAdvanced ? 'background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid var(--primary);' : '';
+        const starIcon = isAdvanced ? '<i class="fas fa-star text-yellow-500 mr-2" title="Candidato Finalista"></i>' : '';
+
         const tr = document.createElement('tr');
+        if(isAdvanced) tr.style = rowStyle;
+        
         tr.innerHTML = `
-          <td class="font-bold">${cand.nombre}</td>
-          <td><div class="text-sm">${cand.correo}</div><div class="text-sm text-muted">${cand.telefono}</div></td>
-          <td>Etapa ${cand.etapaActual}</td>
+          <td class="font-bold">${starIcon}${cand.nombre}</td>
+          <td>
+            <div class="text-sm">${cand.correo}</div>
+            <div class="text-sm text-muted">${cand.telefono}</div>
+            <div class="text-xs mt-1" style="color:var(--primary); font-weight:bold;"><i class="far fa-calendar-alt"></i> Inicio: ${startDateStr} ${daysSince > 0 ? `(${daysSince} d)` : ''}</div>
+          </td>
+          <td class="font-bold">Etapa ${cand.etapaActual}</td>
           <td>${popBadge}</td>
           <td>${formatEstado(cand.estadoEvaluacion)}</td>
           <td><button class="btn btn-outline btn-sm" onclick="openModal('${cand.id}')">Ver Detalle</button></td>
         `;
-        tbody.appendChild(tr);
+        
+        if (daysSince > 60) {
+          tbodyOld.appendChild(tr);
+          oldCandCount++;
+        } else {
+          tbody.appendChild(tr);
+        }
       });
+
+      if (oldCandCount > 0) {
+        oldWrapper.style.display = 'block';
+        oldTitle.innerHTML = `<i class="fas fa-archive mr-2"></i> Candidatos inactivos (>60 días) (${oldCandCount})`;
+      } else {
+        oldWrapper.style.display = 'none';
+      }
     }
 
     function formatEstado(estado) {
