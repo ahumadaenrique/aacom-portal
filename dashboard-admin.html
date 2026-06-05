@@ -15,7 +15,9 @@
       box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
     .admin-container {
+      max-width: 1200px;
       margin: 3rem auto;
+      padding: 0 1rem;
     }
     .candidates-table {
       width: 100%;
@@ -46,7 +48,7 @@
     .badge-amarillo { background: rgba(234, 179, 8, 0.1); color: #ca8a04; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
     .badge-rojo { background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
 
-    .modal {
+    .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(0,0,0,0.6);
@@ -54,12 +56,15 @@
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      pointer-events: auto;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active {
+      display: flex;
     }
     .modal-content {
       background: var(--bg-card);
       width: 100%;
-      max-width: 600px;
+      max-width: 900px;
       border-radius: 1rem;
       padding: 2rem;
       position: relative;
@@ -86,14 +91,31 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.5rem 1rem;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.05);
       border-radius: 0.5rem;
-      color: white;
+      color: var(--text-main);
       text-decoration: none;
       font-size: 0.9rem;
       transition: background 0.2s;
     }
-    .file-link:hover { background: rgba(255,255,255,0.2); }
+    .file-link:hover { background: rgba(0,0,0,0.1); }
+
+    /* Estilos Reporte POP */
+    .report-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; }
+    @media (min-width: 768px) { .report-grid { grid-template-columns: 1fr 1fr; } }
+    .dimension-row { margin-bottom: 1.5rem; }
+    .dim-name { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 600; }
+    .progress-bg { background: var(--bg-alt); height: 1.5rem; border-radius: 1rem; overflow: hidden; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+    .progress-bar { height: 100%; transition: width 1s ease-in-out; border-radius: 1rem; }
+    .progress-text { position: absolute; right: 0.75rem; top: 0; bottom: 0; line-height: 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.9); font-weight: bold;}
+    
+    .alert-box { padding: 1rem; border-radius: 0.5rem; font-size: 0.9rem; margin-bottom: 1rem; border-left: 4px solid transparent; }
+    .alert-warning { background: #fef9c3; color: #854d0e; border-left-color: #eab308; }
+    .alert-danger { background: #fef2f2; color: #991b1b; border-left-color: #ef4444; }
+    .alert-success { background: #f0fdf4; color: #166534; border-left-color: #22c55e; }
+    
+    .question-list { list-style: disc; margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem;}
+    .question-list li { margin-bottom: 0.5rem; }
   </style>
 </head>
 <body>
@@ -149,7 +171,7 @@
       </div>
 
       <div class="modal-section">
-        <h3 class="text-lg font-bold mb-3">Prueba POP</h3>
+        <h3 class="text-xl font-bold mb-3 border-b pb-2">Diagnóstico Comercial (Prueba POP)</h3>
         <div id="m-pop-container"></div>
       </div>
 
@@ -262,15 +284,106 @@
       document.getElementById('m-etapa').textContent = cand.etapaActual;
       document.getElementById('m-estado').innerHTML = formatEstado(cand.estadoEvaluacion);
 
-      // POP Test Result
+      // POP Test Result - Detailed Report
       const popContainer = document.getElementById('m-pop-container');
-      if (cand.resultadoPOP) {
+      if (cand.resultadoPOP && cand.resultadoPOP.detalles) {
+        
+        // Calcular dimensiones
+        const dimData = {
+          logro_empuje: { total: 0, max: 0, nombre: "Orientación al Logro y Empuje", color: "#3b82f6", pregs: ["¿Qué meta financiera o profesional te has fijado para este año y qué estás haciendo para lograrla?", "¿Describe una vez que te esforzaste al máximo por conseguir algo que parecía imposible?"] },
+          tolerancia_rechazo: { total: 0, max: 0, nombre: "Tolerancia al Rechazo (Call Reluctance)", color: "#8b5cf6", pregs: ["Cuéntame de una ocasión en la que un cliente te dijo un NO rotundo. ¿Cómo manejaste la frustración?", "¿Qué estrategia usas para mantener la motivación después de una racha de llamadas sin éxito?"] },
+          autogestion: { total: 0, max: 0, nombre: "Autogestión e Independencia", color: "#f59e0b", pregs: ["¿Cómo organizas tu semana laboral cuando no tienes a un jefe supervisando tus horarios?", "¿Qué haces cuando te distraes trabajando desde casa o fuera de la oficina?"] },
+          coaching: { total: 0, max: 0, nombre: "Receptividad al Coaching", color: "#10b981", pregs: ["Describe una vez que recibiste una crítica muy dura sobre tu trabajo. ¿Cómo reaccionaste y qué cambiaste?", "¿Estás dispuesto a cambiar por completo tu forma de vender si te enseñamos un método distinto?"] },
+          deseabilidad_social: { total: 0, max: 0, nombre: "Escala de Sinceridad", color: "#64748b", pregs: [] }
+        };
+
+        const detalles = cand.resultadoPOP.detalles;
+        for (let key in detalles) {
+          const d = detalles[key];
+          if (dimData[d.dimension]) {
+            dimData[d.dimension].total += d.puntajeReal;
+            dimData[d.dimension].max += 5;
+          }
+        }
+
+        // Evaluar Fiabilidad
+        const deseabilidad = dimData.deseabilidad_social;
+        const fiabilidadPct = Math.round((deseabilidad.total / deseabilidad.max) * 100);
+        let fiabilidadHtml = '';
+        if (fiabilidadPct < 50) {
+          fiabilidadHtml = `<div class="alert-box alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Resultados NO FIABLES:</strong> El candidato tiene un puntaje muy bajo en la Escala de Sinceridad, lo que indica que intentó contestar el cuestionario de una forma socialmente deseable (mintió para verse perfecto). Proceda con extrema precaución.</div>`;
+        } else if (fiabilidadPct < 70) {
+          fiabilidadHtml = `<div class="alert-box alert-warning"><i class="fas fa-exclamation-circle"></i> <strong>Fiabilidad Dudosa:</strong> El candidato mostró cierta tendencia a responder lo que el reclutador quiere escuchar. Valide sus respuestas en la entrevista.</div>`;
+        } else {
+          fiabilidadHtml = `<div class="alert-box alert-success"><i class="fas fa-check-circle"></i> <strong>Resultados Fiables:</strong> El candidato contestó con sinceridad y es autocrítico con sus áreas de oportunidad.</div>`;
+        }
+
+        // Recomendación Final
+        let semaforo = '';
+        const globalPct = cand.resultadoPOP.porcentaje;
+        if (globalPct >= 80) semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #16a34a;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Proceder (Verde)</h4></div>`;
+        else if (globalPct >= 60) semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #ca8a04;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Proceder con Precaución (Amarillo)</h4></div>`;
+        else semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #dc2626;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Orientar hacia Otra Carrera (Rojo)</h4></div>`;
+
+        // Generar Barras y Sugerencias
+        let barrasHtml = '';
+        let sugerenciasHtml = '';
+        
+        ['logro_empuje', 'tolerancia_rechazo', 'autogestion', 'coaching'].forEach(dimKey => {
+          const dim = dimData[dimKey];
+          const pct = Math.round((dim.total / dim.max) * 100);
+          
+          let barColor = dim.color;
+          if (pct < 60) barColor = "#ef4444"; // Rojo si está deficiente
+          
+          barrasHtml += `
+            <div class="dimension-row">
+              <div class="dim-name">
+                <span>${dim.nombre}</span>
+                <span>${pct}%</span>
+              </div>
+              <div class="progress-bg">
+                <div class="progress-bar" style="width: ${pct}%; background-color: ${barColor};"></div>
+              </div>
+            </div>
+          `;
+
+          if (pct < 70) {
+            sugerenciasHtml += `
+              <div class="mt-4">
+                <strong style="color: ${barColor};"><i class="fas fa-search"></i> Explorar: ${dim.nombre}</strong>
+                <ul class="question-list">
+                  <li>${dim.pregs[0]}</li>
+                  <li>${dim.pregs[1]}</li>
+                </ul>
+              </div>
+            `;
+          }
+        });
+
+        if (sugerenciasHtml === '') {
+          sugerenciasHtml = '<p class="text-muted mt-2">El candidato tiene un perfil muy sólido. No hay áreas de alto riesgo detectadas.</p>';
+        }
+
         popContainer.innerHTML = `
-          <p><strong>Resultado Global:</strong> ${cand.resultadoPOP.color} (${cand.resultadoPOP.porcentaje}%)</p>
-          <p class="text-sm text-muted mt-1">El detalle de dimensiones está guardado en base de datos.</p>
+          ${fiabilidadHtml}
+          <div class="report-grid">
+            <div>
+              <h4 class="font-bold mb-4 border-b pb-2">Gráfico de Potencial</h4>
+              ${barrasHtml}
+            </div>
+            <div>
+              ${semaforo}
+              <div class="mt-6">
+                <h4 class="font-bold mb-2 border-b pb-2">Preguntas Sugeridas para Entrevista</h4>
+                <p class="text-sm text-muted">Basadas en las debilidades detectadas en el test:</p>
+                ${sugerenciasHtml}
+              </div>
+            </div>
+          </div>
         `;
       } else {
-        popContainer.innerHTML = '<p class="text-muted">Aún no realiza la prueba.</p>';
+        popContainer.innerHTML = '<p class="text-muted">Aún no realiza la prueba o usa un formato antiguo.</p>';
       }
 
       // Files
@@ -300,6 +413,11 @@
           actionsContainer.innerHTML += `<button class="btn btn-primary" onclick="changeCandidateStatus('${uid}', 'avanzar', 7)">Avanzar a Etapa 7 (Subir Documentación)</button>`;
         }
       }
+      
+      // Botón de peligro para borrar candidato de la BD y resetearlo
+      actionsContainer.innerHTML += `<div style="width:100%; border-top:1px solid rgba(0,0,0,0.1); margin-top:1rem; padding-top:1rem;">
+        <button class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="changeCandidateStatus('${uid}', 'eliminar', null)"><i class="fas fa-trash"></i> Eliminar Registro Completo (Reset)</button>
+      </div>`;
 
       document.getElementById('candidate-modal').classList.add('active');
     };
@@ -312,6 +430,16 @@
       if (!confirm("¿Estás seguro de realizar esta acción?")) return;
 
       try {
+        if (action === 'eliminar') {
+          // Importar deleteDoc
+          const { deleteDoc } = await import('./firebase-config.js');
+          await deleteDoc(doc(db, "users", uid));
+          alert("Registro de candidato eliminado. Ahora puede volver a iniciar sesión y empezar desde cero.");
+          closeModal();
+          loadCandidates();
+          return;
+        }
+
         let updates = {};
         if (action === 'rechazar') {
           updates = { estadoEvaluacion: 'rechazado' };
