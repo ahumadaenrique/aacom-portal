@@ -439,10 +439,36 @@
       // Files
       const filesContainer = document.getElementById('m-files');
       filesContainer.innerHTML = '';
-      if (cand.cv_url) filesContainer.innerHTML += `<a href="${cand.cv_url}" target="_blank" class="file-link"><i class="fas fa-file-pdf"></i> Ver CV</a>`;
-      if (cand.proyecto200_url) filesContainer.innerHTML += `<a href="${cand.proyecto200_url}" target="_blank" class="file-link"><i class="fas fa-file-excel"></i> Proyecto 200</a>`;
-      if (cand.docs_url) filesContainer.innerHTML += `<a href="${cand.docs_url}" target="_blank" class="file-link"><i class="fas fa-folder"></i> Documentación Final</a>`;
-      if (!cand.cv_url && !cand.proyecto200_url && !cand.docs_url) filesContainer.innerHTML = '<p class="text-muted">No hay archivos subidos.</p>';
+      if (cand.cv_url) {
+        filesContainer.innerHTML += `<a href="${cand.cv_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-pdf mr-1"></i> Currículum</a>`;
+      }
+      if (cand.proyecto200_url) {
+        filesContainer.innerHTML += `<a href="${cand.proyecto200_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-excel mr-1"></i> Proyecto 200</a>`;
+      }
+      if (cand.docs_url) {
+        filesContainer.innerHTML += `<a href="${cand.docs_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-folder-open mr-1"></i> Archivo ZIP (Legacy)</a>`;
+      }
+      if (cand.doc_identificacion) {
+        filesContainer.innerHTML += `<a href="${cand.doc_identificacion}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-id-card mr-1"></i> Identificación</a>`;
+      }
+      if (cand.doc_estudios) {
+        filesContainer.innerHTML += `<a href="${cand.doc_estudios}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-graduation-cap mr-1"></i> Estudios</a>`;
+      }
+      if (cand.doc_domicilio) {
+        filesContainer.innerHTML += `<a href="${cand.doc_domicilio}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-home mr-1"></i> Domicilio</a>`;
+      }
+      if (cand.doc_fiscal) {
+        filesContainer.innerHTML += `<a href="${cand.doc_fiscal}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-invoice-dollar mr-1"></i> Constancia Fiscal</a>`;
+      }
+      if (cand.doc_rfc) {
+        filesContainer.innerHTML += `<a href="${cand.doc_rfc}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-alt mr-1"></i> RFC</a>`;
+      }
+      if (cand.doc_curp) {
+        filesContainer.innerHTML += `<a href="${cand.doc_curp}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-id-badge mr-1"></i> CURP</a>`;
+      }
+      if (!cand.cv_url && !cand.proyecto200_url && !cand.docs_url && !cand.doc_identificacion && !cand.doc_estudios && !cand.doc_domicilio && !cand.doc_fiscal && !cand.doc_rfc && !cand.doc_curp) {
+        filesContainer.innerHTML = '<p class="text-muted">No hay archivos subidos.</p>';
+      }
 
       // Actions
       const actionsContainer = document.getElementById('m-actions');

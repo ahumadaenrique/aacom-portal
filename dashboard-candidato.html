@@ -244,15 +244,76 @@
                 <p id="upload-status-excel" class="text-sm mt-2" style="color:var(--primary);"></p>
               </div>`;
           } else if (step.action === 'upload_docs') {
+            const isUploaded = (field) => userData[field] ? '<span class="text-primary font-bold"><i class="fas fa-check"></i> Subido</span>' : '<span class="text-muted">Pendiente</span>';
+            
             actionHtml = `
               <div class="action-area">
-                <p class="text-sm mb-2">Sube un archivo ZIP o PDF con tu documentación completa.</p>
-                <div class="file-input-wrapper">
-                  <label for="docs-upload" class="file-label"><i class="fas fa-folder-open mr-2"></i> Seleccionar Archivo</label>
-                  <input type="file" id="docs-upload" class="file-input" accept=".zip,.pdf">
-                  <button class="btn btn-primary btn-sm" onclick="uploadFile('docs-upload', 'docs_url', 8)">Enviar Documentos</button>
+                <p class="text-sm mb-3">Sube tus documentos oficiales (formato PDF, JPG o PNG). Cuando hayas subido todos, haz clic en "Finalizar y Enviar".</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <!-- Identificación -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">1. Identificación Oficial</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-identificacion" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-identificacion', 'doc_identificacion')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-identificacion">${isUploaded('doc_identificacion')}</div>
+                  </div>
+
+                  <!-- Comprobante de Estudios -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">2. Comprobante de Estudios</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-estudios" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-estudios', 'doc_estudios')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-estudios">${isUploaded('doc_estudios')}</div>
+                  </div>
+
+                  <!-- Comprobante de Domicilio -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">3. Comprobante de Domicilio (máx 3 meses)</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-domicilio" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-domicilio', 'doc_domicilio')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-domicilio">${isUploaded('doc_domicilio')}</div>
+                  </div>
+
+                  <!-- Constancia Fiscal -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">4. Constancia de Situación Fiscal (máx 3 meses)</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-fiscal" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-fiscal', 'doc_fiscal')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-fiscal">${isUploaded('doc_fiscal')}</div>
+                  </div>
+
+                  <!-- RFC -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">5. RFC</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-rfc" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-rfc', 'doc_rfc')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-rfc">${isUploaded('doc_rfc')}</div>
+                  </div>
+
+                  <!-- CURP -->
+                  <div style="background: rgba(0,0,0,0.02); padding: 1rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.05);">
+                    <label class="text-sm font-bold block mb-2">6. CURP</label>
+                    <div class="flex items-center gap-2">
+                      <input type="file" id="doc-curp" class="text-xs w-full" accept=".pdf,.jpg,.png,.jpeg">
+                      <button class="btn btn-outline text-xs" style="padding: 0.3rem 0.6rem;" onclick="uploadSingleDoc('doc-curp', 'doc_curp')">Subir</button>
+                    </div>
+                    <div class="text-xs mt-2" id="status-doc-curp">${isUploaded('doc_curp')}</div>
+                  </div>
                 </div>
-                <p id="upload-status-docs" class="text-sm mt-2" style="color:var(--primary);"></p>
+
+                <button class="btn btn-primary" style="width: 100%;" onclick="finishStage7()"><i class="fas fa-paper-plane mr-2"></i> Finalizar y Enviar Documentación Completa</button>
+                <p id="finish-status-7" class="text-sm mt-2 text-center" style="color: #ef4444; font-weight: bold;"></p>
               </div>`;
           } else if (step.action === 'schedule_interview_1') {
             actionHtml = `
@@ -320,6 +381,58 @@
         console.error(error);
         statusP.textContent = "Error al subir el archivo: " + error.message;
         statusP.style.color = "#ef4444";
+      }
+    };
+    // Global function for uploading individual documents for stage 7
+    window.uploadSingleDoc = async (inputId, dbField) => {
+      const fileInput = document.getElementById(inputId);
+      const statusDiv = document.getElementById('status-' + inputId);
+      
+      if (!fileInput.files.length) {
+        alert("Selecciona un archivo primero.");
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      statusDiv.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin mr-1"></i> Subiendo...</span>';
+      
+      try {
+        const fileRef = ref(storage, `candidatos/${currentUser.uid}/${inputId}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        
+        const updateData = {};
+        updateData[dbField] = url;
+        await updateDoc(doc(db, "users", currentUser.uid), updateData);
+        
+        // Actualizar el userData local
+        userData[dbField] = url;
+        
+        statusDiv.innerHTML = '<span class="text-primary font-bold"><i class="fas fa-check mr-1"></i> Subido con éxito</span>';
+      } catch (error) {
+        console.error(error);
+        statusDiv.innerHTML = `<span style="color: #ef4444;">Error: ${error.message}</span>`;
+      }
+    };
+
+    window.finishStage7 = async () => {
+      const statusP = document.getElementById('finish-status-7');
+      const requiredDocs = ['doc_identificacion', 'doc_estudios', 'doc_domicilio', 'doc_fiscal', 'doc_rfc', 'doc_curp'];
+      
+      const missingDocs = requiredDocs.filter(d => !userData[d]);
+      if (missingDocs.length > 0) {
+        statusP.textContent = `Aún te faltan ${missingDocs.length} documento(s) por subir. Sube todos los archivos para continuar.`;
+        return;
+      }
+      
+      try {
+        statusP.style.color = 'var(--primary)';
+        statusP.textContent = "Procesando...";
+        await updateDoc(doc(db, "users", currentUser.uid), { etapaActual: 8 });
+        window.location.reload();
+      } catch (error) {
+        statusP.style.color = '#ef4444';
+        statusP.textContent = "Error al finalizar: " + error.message;
       }
     };
   </script>
