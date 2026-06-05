@@ -62,6 +62,8 @@
       border-color: var(--primary);
       background: rgba(99, 192, 165, 0.1);
     }
+    .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1rem; }
+    .form-input, .form-select { padding: 0.8rem; border-radius: 0.5rem; border: 1px solid rgba(0,0,0,0.1); font-family: var(--font-sans); background: var(--bg-alt); color: var(--text-main); width: 100%; font-size: 1rem; }
   </style>
 </head>
 <body>
@@ -75,14 +77,190 @@
 
   <div class="container test-container">
     <form id="pop-form">
-      <div id="questions-container" class="options-grid">
-        <!-- Preguntas dinámicas -->
-      </div>
       
-      <div class="text-center mt-8">
-        <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;" id="btn-submit">Finalizar Prueba</button>
-        <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; display: block; margin: 1rem auto;">
-        <p id="submit-error" style="color: #ef4444; margin-top: 1rem; display: none;">Por favor responde todas las preguntas.</p>
+      <!-- FASE 1: Antecedentes -->
+      <div id="antecedentes-container">
+        <div class="question-card">
+          <h2 class="text-xl font-bold mb-2">Fase 1: Antecedentes y Perfil</h2>
+          <p class="text-muted mb-6">Por favor, responde con sinceridad. Esta información forma parte de tu expediente.</p>
+          
+          <div class="form-group">
+            <label class="font-bold">1. Nivel de escolaridad máximo obtenido</label>
+            <select name="ant_escolaridad" required class="form-select">
+              <option value="">Selecciona una opción...</option>
+              <option value="Secundaria">Secundaria</option>
+              <option value="Preparatoria">Preparatoria</option>
+              <option value="Licenciatura trunca">Licenciatura trunca</option>
+              <option value="Licenciatura completa o Postgrado">Licenciatura completa o Postgrado</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">2. ¿Está usted titulado?</label>
+            <select name="ant_titulado" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">3. ¿Hace cuántos años vive en su ciudad actual?</label>
+            <select name="ant_ciudad" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="0 a 3 años">0 a 3 años</option>
+              <option value="3 a 6 años">3 a 6 años</option>
+              <option value="6 a 10 años">6 a 10 años</option>
+              <option value="Más de 10 años">Más de 10 años</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">4. Situación profesional</label>
+            <select name="ant_situacion" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Desempleado">Desempleado</option>
+              <option value="Empleado de tiempo completo">Empleado de tiempo completo</option>
+              <option value="Empleado de medio tiempo">Empleado de medio tiempo</option>
+              <option value="Empresario">Empresario</option>
+              <option value="Emprendedor">Emprendedor</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">5. Si estás desempleado, ¿hace cuántos meses? (Pon 0 si no aplica)</label>
+            <input type="number" name="ant_meses_desempleado" min="0" required class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">6. ¿Cuáles son tus ingresos mensuales?</label>
+            <select name="ant_ingresos" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="0 a 10 mil pesos">0 a 10 mil pesos</option>
+              <option value="10 mil a 20 mil pesos">10 mil a 20 mil pesos</option>
+              <option value="20 mil a 50 mil pesos">20 mil a 50 mil pesos</option>
+              <option value="Más de 50 mil pesos">Más de 50 mil pesos</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">7. ¿Cuáles son tus gastos personales/familiares actuales?</label>
+            <select name="ant_gastos" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="0 a 10 mil pesos">0 a 10 mil pesos</option>
+              <option value="10 mil a 20 mil pesos">10 mil a 20 mil pesos</option>
+              <option value="20 mil a 50 mil pesos">20 mil a 50 mil pesos</option>
+              <option value="Más de 50 mil pesos">Más de 50 mil pesos</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">8. Escala 1-10: ¿Interés en emprender SIN sueldo base?</label>
+            <input type="number" name="ant_interes_emprender" min="1" max="10" required class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">9. Rango salarial mensual promedio de las 20 personas con las que más convives:</label>
+            <select name="ant_entorno_ingresos" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="10 mil">10 mil</option>
+              <option value="15 mil">15 mil</option>
+              <option value="20 mil">20 mil</option>
+              <option value="30 mil">30 mil</option>
+              <option value="50 mil">50 mil</option>
+              <option value="Más de 60 mil">Más de 60 mil</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">10. ¿Cuántas horas trabajas habitualmente al día? (1 a 12)</label>
+            <input type="number" name="ant_horas" min="1" max="12" required class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">11. ¿Cuánto necesitas generar mensualmente? (0 a 200,000)</label>
+            <input type="number" name="ant_necesidad_generar" min="0" max="200000" required class="form-input">
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">12. ¿Tiene experiencia en ventas?</label>
+            <select name="ant_exp_ventas" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">13. ¿Tienes seguro de vida?</label>
+            <select name="ant_seguro_vida" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">14. ¿Cómo se enteró de esta oportunidad?</label>
+            <select name="ant_medio" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Amigo">Amigo</option>
+              <option value="Familiar">Familiar</option>
+              <option value="Redes sociales">Redes sociales</option>
+              <option value="Bolsa de trabajo">Bolsa de trabajo</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">15. ¿Alguna vez ha ganado por comisiones?</label>
+            <select name="ant_comisiones" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">16. ¿Dispuesto a dedicar 100% de tu tiempo laboral a esto?</label>
+            <select name="ant_100_tiempo" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label class="font-bold">17. ¿Te comprometes a no "tirar la toalla" antes de los primeros 3 meses?</label>
+            <select name="ant_compromiso" required class="form-select">
+              <option value="">Selecciona...</option>
+              <option value="Si">Sí</option>
+              <option value="No">No</option>
+            </select>
+          </div>
+          
+          <div class="text-center mt-8">
+            <button type="button" class="btn btn-primary" id="btn-next">Siguiente: Iniciar Prueba POP</button>
+            <p id="ant-error" style="color: #ef4444; margin-top: 1rem; display: none;">Por favor, responde todas las preguntas y revisa que los números sean válidos.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FASE 2: POP -->
+      <div id="pop-section" style="display: none;">
+        <div class="mb-6">
+          <h2 class="text-xl font-bold">Fase 2: Diagnóstico Comercial</h2>
+          <p class="text-muted">Responde de acuerdo a cómo te identificas con cada afirmación.</p>
+        </div>
+        
+        <div id="questions-container" class="options-grid">
+          <!-- Preguntas dinámicas -->
+        </div>
+      
+        <div class="text-center mt-8">
+          <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;" id="btn-submit">Finalizar Evaluación Completa</button>
+          <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; display: block; margin: 1rem auto;">
+          <p id="submit-error" style="color: #ef4444; margin-top: 1rem; display: none;">Por favor responde todas las preguntas.</p>
+        </div>
       </div>
     </form>
   </div>
@@ -122,7 +300,7 @@
           testData.escala_evaluacion.forEach(opt => {
             optionsHtml += `
               <label class="option-label">
-                <input type="radio" name="q_${q.id}" value="${opt.valor}" required>
+                <input type="radio" name="q_${q.id}" value="${opt.valor}" required disabled>
                 ${opt.etiqueta}
               </label>
             `;
@@ -142,6 +320,43 @@
         alert("Hubo un error al cargar la prueba. Intenta más tarde.");
       }
     }
+
+    let isAutoRejected = false;
+    let antecedentesData = {};
+
+    document.getElementById('btn-next').addEventListener('click', () => {
+      const form = document.getElementById('pop-form');
+      if (!form.checkValidity()) {
+        document.getElementById('ant-error').style.display = 'block';
+        form.reportValidity();
+        return;
+      }
+      document.getElementById('ant-error').style.display = 'none';
+
+      // Guardar antecedentes
+      const formData = new FormData(form);
+      for (const [key, value] of formData.entries()) {
+        if (key.startsWith('ant_')) {
+          antecedentesData[key] = value;
+        }
+      }
+
+      // Evaluar auto-rechazo (pero de forma silenciosa para que haga el POP)
+      if (antecedentesData['ant_escolaridad'] === 'Secundaria' || antecedentesData['ant_escolaridad'] === 'Preparatoria') {
+        isAutoRejected = true;
+      }
+      if (antecedentesData['ant_ciudad'] === '0 a 3 años') {
+        isAutoRejected = true;
+      }
+
+      // Habilitar los radios del POP
+      document.querySelectorAll('#questions-container input[type="radio"]').forEach(el => el.disabled = false);
+
+      // Transición
+      document.getElementById('antecedentes-container').style.display = 'none';
+      document.getElementById('pop-section').style.display = 'block';
+      window.scrollTo(0,0);
+    });
 
     document.getElementById('pop-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -182,15 +397,21 @@
       let color = "";
       let estadoEvaluacion = "";
 
-      if (porcentaje >= 80) {
-        color = "Verde";
-        estadoEvaluacion = "aprobado";
-      } else if (porcentaje >= 60) {
-        color = "Amarillo";
-        estadoEvaluacion = "pendiente_revision";
-      } else {
+      if (isAutoRejected) {
+        // Auto-rechazo silencioso por antecedentes
         color = "Rojo";
         estadoEvaluacion = "rechazado";
+      } else {
+        if (porcentaje >= 80) {
+          color = "Verde";
+          estadoEvaluacion = "aprobado";
+        } else if (porcentaje >= 60) {
+          color = "Amarillo";
+          estadoEvaluacion = "pendiente_revision";
+        } else {
+          color = "Rojo";
+          estadoEvaluacion = "rechazado";
+        }
       }
 
       document.getElementById('btn-submit').textContent = "Guardando...";
@@ -200,10 +421,12 @@
         await updateDoc(doc(db, "users", currentUser.uid), {
           etapaActual: 4, // Avanza a la etapa 4 (Primera Cita)
           estadoEvaluacion: estadoEvaluacion,
+          antecedentes: antecedentesData,
           resultadoPOP: {
             color: color,
             porcentaje: Math.round(porcentaje),
-            detalles: respuestas
+            detalles: respuestas,
+            autoRechazadoPorAntecedentes: isAutoRejected
           }
         });
 

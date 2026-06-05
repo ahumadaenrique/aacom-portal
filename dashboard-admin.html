@@ -6,6 +6,7 @@
   <title>Admin Reclutamiento - AACOM</title>
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <style>
     body { background: var(--bg-alt); color: var(--text-main); padding-bottom: 5rem; }
     .dashboard-header {
@@ -77,10 +78,12 @@
       right: 1.5rem;
       background: transparent;
       border: none;
-      color: white;
+      color: var(--text-muted);
       font-size: 1.5rem;
       cursor: pointer;
+      transition: color 0.2s;
     }
+    .close-btn:hover { color: var(--text-main); }
     .modal-section {
       margin-bottom: 1.5rem;
       padding-bottom: 1.5rem;
@@ -124,7 +127,7 @@
     <div class="container flex justify-between items-center">
       <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px;">
       <div class="flex items-center gap-4">
-        <span class="badge" style="background: var(--primary);">Panel Administrador</span>
+        <span class="badge" style="background: rgba(99, 192, 165, 0.15); color: var(--primary); margin-bottom: 0;">Panel Administrador</span>
         <button id="btn-logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Cerrar Sesión</button>
       </div>
     </div>
@@ -161,21 +164,32 @@
     <div class="modal-content">
       <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
       
-      <h2 class="text-2xl font-bold mb-1" id="m-name">Nombre Candidato</h2>
-      <p class="text-muted mb-4" id="m-contact">correo@ejemplo.com | 5555555555</p>
-      
-      <div class="modal-section">
-        <h3 class="text-lg font-bold mb-3">Progreso</h3>
-        <p><strong>Etapa:</strong> <span id="m-etapa" class="text-primary font-bold">4</span></p>
-        <p class="mt-2"><strong>Estado:</strong> <span id="m-estado">Aprobado</span></p>
+      <!-- Contenedor para exportar a PDF -->
+      <div id="export-content" style="padding: 1rem; background: var(--bg-card);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; display: inline-block;">
+        </div>
+        <h2 class="text-2xl font-bold mb-1" id="m-name">Nombre Candidato</h2>
+        <p class="text-muted mb-4" id="m-contact">correo@ejemplo.com | 5555555555</p>
+        
+        <div class="modal-section">
+          <h3 class="text-lg font-bold mb-3">Progreso</h3>
+          <p><strong>Etapa:</strong> <span id="m-etapa" class="text-primary font-bold">4</span></p>
+          <p class="mt-2"><strong>Estado:</strong> <span id="m-estado">Aprobado</span></p>
+        </div>
+
+        <div class="modal-section">
+          <h3 class="text-xl font-bold mb-3 border-b pb-2">Antecedentes y Perfil</h3>
+          <div id="m-antecedentes-container"></div>
+        </div>
+
+        <div class="modal-section" style="border-bottom: none; padding-bottom: 0;">
+          <h3 class="text-xl font-bold mb-3 border-b pb-2">Diagnóstico Comercial (Prueba POP)</h3>
+          <div id="m-pop-container"></div>
+        </div>
       </div>
 
-      <div class="modal-section">
-        <h3 class="text-xl font-bold mb-3 border-b pb-2">Diagnóstico Comercial (Prueba POP)</h3>
-        <div id="m-pop-container"></div>
-      </div>
-
-      <div class="modal-section">
+      <div class="modal-section" style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1.5rem; margin-top: 2rem;">
         <h3 class="text-lg font-bold mb-3">Archivos Adjuntos</h3>
         <div class="flex gap-4 flex-wrap" id="m-files">
           <!-- Links a CV, Excel, Docs -->
@@ -283,6 +297,35 @@
       document.getElementById('m-contact').textContent = `${cand.correo} | ${cand.telefono}`;
       document.getElementById('m-etapa').textContent = cand.etapaActual;
       document.getElementById('m-estado').innerHTML = formatEstado(cand.estadoEvaluacion);
+
+      // Antecedentes
+      const antContainer = document.getElementById('m-antecedentes-container');
+      if (cand.antecedentes) {
+        const a = cand.antecedentes;
+        antContainer.innerHTML = `
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div><strong>Escolaridad:</strong> ${a.ant_escolaridad}</div>
+            <div><strong>Titulado:</strong> ${a.ant_titulado}</div>
+            <div><strong>Años en la ciudad:</strong> ${a.ant_ciudad}</div>
+            <div><strong>Situación actual:</strong> ${a.ant_situacion}</div>
+            <div><strong>Meses desempleado:</strong> ${a.ant_meses_desempleado}</div>
+            <div><strong>Ingresos actuales:</strong> ${a.ant_ingresos}</div>
+            <div><strong>Gastos actuales:</strong> ${a.ant_gastos}</div>
+            <div><strong>Interés emprender (1-10):</strong> ${a.ant_interes_emprender}</div>
+            <div><strong>Ingreso entorno:</strong> ${a.ant_entorno_ingresos}</div>
+            <div><strong>Horas trabajo:</strong> ${a.ant_horas}</div>
+            <div><strong>Necesita generar:</strong> ${a.ant_necesidad_generar}</div>
+            <div><strong>Exp. en Ventas:</strong> ${a.ant_exp_ventas}</div>
+            <div><strong>Seguro de vida:</strong> ${a.ant_seguro_vida}</div>
+            <div><strong>Medio de contacto:</strong> ${a.ant_medio}</div>
+            <div><strong>Ganado por comisiones:</strong> ${a.ant_comisiones}</div>
+            <div><strong>Disponibilidad 100%:</strong> ${a.ant_100_tiempo}</div>
+            <div><strong>Compromiso 3 meses:</strong> ${a.ant_compromiso}</div>
+          </div>
+        `;
+      } else {
+        antContainer.innerHTML = '<p class="text-muted">No hay datos de antecedentes registrados.</p>';
+      }
 
       // POP Test Result - Detailed Report
       const popContainer = document.getElementById('m-pop-container');
@@ -414,6 +457,9 @@
         }
       }
       
+      // Botón PDF
+      actionsContainer.innerHTML += `<button class="btn btn-outline" style="border-color:#3b82f6; color:#3b82f6;" onclick="downloadPDF('${cand.nombre}')"><i class="fas fa-file-pdf"></i> Descargar Reporte PDF</button>`;
+      
       // Botón de peligro para borrar candidato de la BD y resetearlo
       actionsContainer.innerHTML += `<div style="width:100%; border-top:1px solid rgba(0,0,0,0.1); margin-top:1rem; padding-top:1rem;">
         <button class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="changeCandidateStatus('${uid}', 'eliminar', null)"><i class="fas fa-trash"></i> Eliminar Registro Completo (Reset)</button>
@@ -424,6 +470,18 @@
 
     window.closeModal = () => {
       document.getElementById('candidate-modal').classList.remove('active');
+    };
+
+    window.downloadPDF = (candidateName) => {
+      const element = document.getElementById('export-content');
+      const opt = {
+        margin:       0.5,
+        filename:     `Reporte_AACOM_${candidateName.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
     };
 
     window.changeCandidateStatus = async (uid, action, targetStage) => {
