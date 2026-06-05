@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alertas AACOM</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background: #0f172a; color: white; display: flex; flex-direction: column; height: 100vh; margin: 0; font-family: sans-serif; overflow: hidden; }
+    .header { padding: 1.5rem; background: #1e293b; text-align: center; border-bottom: 2px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; }
+    .content { flex: 1; padding: 1.5rem; overflow-y: auto; }
+    .card { background: #1e293b; border-radius: 1rem; padding: 1.5rem; margin-bottom: 1rem; border-left: 4px solid var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    .stat-number { font-size: 5rem; font-weight: bold; color: var(--primary); text-align: center; margin: 0.5rem 0; text-shadow: 0 0 20px rgba(16, 185, 129, 0.4); }
+    .item-row { display: flex; justify-content: space-between; padding: 0.8rem 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .item-row:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1 class="text-xl font-bold text-white"><i class="fas fa-bell text-primary mr-2"></i> AACOM Alertas</h1>
+  </div>
+  <div class="content">
+    <div class="card" style="border-left: none; text-align: center;">
+      <h2 class="text-xs text-gray-400 uppercase tracking-wider font-bold mb-2">Candidatos Pendientes</h2>
+      <div class="stat-number" id="pending-count">-</div>
+      <p class="text-sm text-gray-400" id="status-text">Conectando a la base de datos...</p>
+    </div>
+    
+    <div id="pending-list" class="mt-6">
+      <!-- Lista dinámica de candidatos -->
+    </div>
+
+    <div class="text-center mt-8 mb-8">
+      <a href="dashboard-admin.html" class="btn btn-primary w-full py-4 rounded-lg block font-bold text-lg shadow-lg">ABRIR PANEL COMPLETO</a>
+    </div>
+  </div>
+
+  <!-- Sonido de notificación -->
+  <audio id="alert-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" preload="auto"></audio>
+
+  <script type="module">
+    import { auth, db, onAuthStateChanged, collection, onSnapshot, query, where } from './firebase-config.js';
+
+    let lastCount = -1;
+    let isInitialized = false;
+    const sound = document.getElementById('alert-sound');
+
+    // Autenticación requerida
+    onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        window.location.href = "reclutamiento.html";
+        return;
+      }
+      
+      const q = query(collection(db, "users"), where("rol", "==", "candidato"));
+      
+      onSnapshot(q, (snapshot) => {
+        let pending = [];
+        
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          
+          let necesitaAtencion = false;
+          let razon = "";
+          
+          if (data.estadoEvaluacion === 'pendiente_revision') {
+            necesitaAtencion = true;
+            razon = "Requiere Autorización";
+          } else if (data.etapaActual === 2 && data.estadoEvaluacion === 'pendiente') {
+            necesitaAtencion = true;
+            razon = "Recién Registrado";
+          } else if (data.etapaActual === 6 && data.agente_experimentado && data.estadoEvaluacion === 'pendiente') {
+            necesitaAtencion = true;
+            razon = "Agente Experimentado Registrado";
+          }
+          
+          if (necesitaAtencion) {
+            pending.push({ id: doc.id, nombre: data.nombre, etapa: data.etapaActual, razon: razon, timestamp: data.createdAt ? data.createdAt.seconds : 0 });
+          }
+        });
+
+        // Ordenar del más reciente al más antiguo
+        pending.sort((a, b) => b.timestamp - a.timestamp);
+
+        document.getElementById('pending-count').textContent = pending.length;
+        document.getElementById('status-text').textContent = pending.length === 1 ? "1 candidato requiere tu atención." : pending.length + " candidatos requieren tu atención.";
+        
+        const listDiv = document.getElementById('pending-list');
+        listDiv.innerHTML = '';
+        
+        if (pending.length === 0) {
+          listDiv.innerHTML = '<p class="text-center text-gray-500 mt-8"><i class="fas fa-check-circle text-4xl mb-3 block"></i>Todo al día. No hay pendientes.</p>';
+        } else {
+          pending.forEach(p => {
+            listDiv.innerHTML += `
+              <div class="card p-4 mb-3" style="border-left-width: 3px;">
+                <div class="font-bold text-white text-lg">${p.nombre}</div>
+                <div class="text-sm mt-1" style="color: var(--primary);"><i class="fas fa-exclamation-circle mr-1"></i> ${p.razon}</div>
+                <div class="text-xs text-gray-400 mt-2">Etapa Actual: ${p.etapa}</div>
+              </div>
+            `;
+          });
+        }
+
+        // Tocar sonido si sube el número de pendientes
+        if (isInitialized && pending.length > lastCount) {
+          sound.play().catch(e => console.log("Interacción requerida por el navegador para reproducir audio."));
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("AACOM: Nueva Acción Requerida", { body: "Un candidato requiere tu revisión en el portal.", icon: "assets/logo.png" });
+          }
+        }
+        
+        lastCount = pending.length;
+        isInitialized = true;
+      });
+      
+      // Pedir permiso para notificaciones web en el móvil/escritorio
+      if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+        document.body.addEventListener('click', () => {
+          Notification.requestPermission();
+        }, { once: true });
+      }
+    });
+  </script>
+</body>
+</html>

@@ -181,6 +181,7 @@
   <!-- Firebase Logic -->
   <script type="module">
     import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc } from './firebase-config.js';
+    import { serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
 
     // REGISTRO
     document.getElementById('register-form').addEventListener('submit', async (e) => {
@@ -213,14 +214,20 @@
           }
         }
         
+        const urlParams = new URLSearchParams(window.location.search);
+        const isExperimentado = urlParams.get('tipo') === 'experimentado';
+        const initialStage = isExperimentado ? 6 : 2;
+
         // Guardar perfil en Firestore e iniciar Etapa 1
         await setDoc(doc(db, "users", user.uid), {
           nombre: name,
           correo: email,
           telefono: phone,
           rol: "candidato",
-          etapaActual: 2, // 1 está completada (Registro), empezamos en 2 (Subir CV)
+          etapaActual: initialStage, // 1 está completada (Registro), empezamos en 2 (Subir CV) o en 6 si ya es agente
+          agente_experimentado: isExperimentado,
           fechaRegistro: new Date().toISOString(),
+          createdAt: serverTimestamp(),
           estadoEvaluacion: "pendiente"
         });
 

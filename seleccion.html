@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Selecciona tu Perfil - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: var(--bg-alt);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 2rem;
+    }
+    .logo-container {
+      margin-bottom: 3rem;
+      text-align: center;
+    }
+    .logo-container img {
+      height: 50px;
+    }
+    .cards-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      max-width: 900px;
+      width: 100%;
+    }
+    @media (min-width: 768px) {
+      .cards-container {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    .profile-card {
+      background: var(--bg-card);
+      border-radius: 1.5rem;
+      padding: 3rem 2rem;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      border: 2px solid transparent;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .profile-card:hover {
+      transform: translateY(-10px);
+      border-color: var(--primary);
+      box-shadow: 0 15px 40px rgba(16, 185, 129, 0.2);
+    }
+    .profile-icon {
+      font-size: 4rem;
+      color: var(--primary);
+      margin-bottom: 1.5rem;
+    }
+    .profile-title {
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: var(--primary);
+    }
+    .profile-desc {
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    .profile-btn {
+      margin-top: auto;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="logo-container">
+    <a href="index.html">
+      <img src="assets/logo.png" alt="AACOM Seguros">
+    </a>
+    <h1 class="mt-4 text-2xl font-bold">Antes de comenzar...</h1>
+    <p class="text-muted mt-2">Dinos cuál es tu experiencia actual para personalizar tu proceso.</p>
+  </div>
+
+  <div class="cards-container">
+    <!-- Opción 1: Nuevo / Sin Cédula -->
+    <a href="reclutamiento.html?tipo=nuevo" class="profile-card">
+      <i class="fas fa-seedling profile-icon"></i>
+      <h2 class="profile-title">Quiero iniciar mi carrera</h2>
+      <p class="profile-desc">No soy agente de seguros o no cuento con una cédula vigente. Quiero comenzar mi formación desde cero con AACOM.</p>
+      <div class="btn btn-primary profile-btn">Seleccionar Perfil</div>
+    </a>
+
+    <!-- Opción 2: Experimentado / Con Cédula -->
+    <a href="reclutamiento.html?tipo=experimentado" class="profile-card" style="border-color: rgba(16, 185, 129, 0.3);">
+      <i class="fas fa-user-tie profile-icon"></i>
+      <h2 class="profile-title">Soy Agente con Cédula</h2>
+      <p class="profile-desc">Ya soy agente de seguros y cuento con mi cédula vigente. Estoy listo para integrarme al equipo y agilizar mi alta.</p>
+      <div class="btn btn-outline profile-btn" style="border-color: var(--primary); color: var(--primary);">Seleccionar Perfil</div>
+    </a>
+  </div>
+
+</body>
+</html>
