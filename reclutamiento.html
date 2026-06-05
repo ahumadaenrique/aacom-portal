@@ -199,8 +199,19 @@
           throw new Error("Las contraseñas no coinciden. Por favor, verifícalas.");
         }
 
-        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-        const user = userCredential.user;
+        let user;
+        try {
+          const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+          user = userCredential.user;
+        } catch (authError) {
+          if (authError.code === 'auth/email-already-in-use') {
+            // El usuario ya existe en Authentication. Tratamos de loguearlo para "sobreescribir" su cuenta (Reset).
+            const loginCredential = await signInWithEmailAndPassword(auth, email, pass);
+            user = loginCredential.user;
+          } else {
+            throw authError; // Re-lanzar el error original si es otra cosa
+          }
+        }
         
         // Guardar perfil en Firestore e iniciar Etapa 1
         await setDoc(doc(db, "users", user.uid), {
@@ -213,7 +224,7 @@
           estadoEvaluacion: "pendiente"
         });
 
-        alert("Cuenta creada con éxito. Redirigiendo al portal...");
+        alert("Cuenta creada o restaurada con éxito. Redirigiendo al portal...");
         window.location.href = "dashboard-candidato.html";
         
       } catch (error) {
