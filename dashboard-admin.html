@@ -302,16 +302,23 @@
       const antContainer = document.getElementById('m-antecedentes-container');
       if (cand.antecedentes) {
         const a = cand.antecedentes;
+        
+        const formatFiltro = (valor, esRechazo) => esRechazo ? `<span style="color: #ef4444; font-weight: bold;">${valor} <i class="fas fa-times-circle"></i></span>` : valor;
+        
+        const escRechazo = (a.ant_escolaridad === 'Secundaria' || a.ant_escolaridad === 'Preparatoria');
+        const ciudadRechazo = (a.ant_ciudad === '0 a 3 años');
+        const interesRechazo = (parseInt(a.ant_interes_emprender) <= 6);
+
         antContainer.innerHTML = `
           <div class="grid md:grid-cols-2 gap-4 text-sm">
-            <div><strong>Escolaridad:</strong> ${a.ant_escolaridad}</div>
+            <div><strong>Escolaridad:</strong> ${formatFiltro(a.ant_escolaridad, escRechazo)}</div>
             <div><strong>Titulado:</strong> ${a.ant_titulado}</div>
-            <div><strong>Años en la ciudad:</strong> ${a.ant_ciudad}</div>
+            <div><strong>Años en la ciudad:</strong> ${formatFiltro(a.ant_ciudad, ciudadRechazo)}</div>
             <div><strong>Situación actual:</strong> ${a.ant_situacion}</div>
             <div><strong>Meses desempleado:</strong> ${a.ant_meses_desempleado}</div>
             <div><strong>Ingresos actuales:</strong> ${a.ant_ingresos}</div>
             <div><strong>Gastos actuales:</strong> ${a.ant_gastos}</div>
-            <div><strong>Interés emprender (1-10):</strong> ${a.ant_interes_emprender}</div>
+            <div><strong>Interés emprender (1-10):</strong> ${formatFiltro(a.ant_interes_emprender, interesRechazo)}</div>
             <div><strong>Ingreso entorno:</strong> ${a.ant_entorno_ingresos}</div>
             <div><strong>Horas trabajo:</strong> ${a.ant_horas}</div>
             <div><strong>Necesita generar:</strong> ${a.ant_necesidad_generar}</div>

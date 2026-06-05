@@ -348,6 +348,9 @@
       if (antecedentesData['ant_ciudad'] === '0 a 3 años') {
         isAutoRejected = true;
       }
+      if (parseInt(antecedentesData['ant_interes_emprender']) <= 6) {
+        isAutoRejected = true;
+      }
 
       // Habilitar los radios del POP
       document.querySelectorAll('#questions-container input[type="radio"]').forEach(el => el.disabled = false);
