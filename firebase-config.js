@@ -4,7 +4,7 @@ import { getFirestore, doc, setDoc, getDoc, collection, getDocs, updateDoc } fro
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBPQKjDXn3VaPgrfUQRTIy6zSUSR1qOt3U",
+  apiKey: "AIzaSyBPQKjDXn3VaPgrfUQRTiy6zSUSR1qOt3U",
   authDomain: "aacom-reclutamiento.firebaseapp.com",
   projectId: "aacom-reclutamiento",
   storageBucket: "aacom-reclutamiento.firebasestorage.app",
