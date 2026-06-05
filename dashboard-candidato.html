@@ -156,7 +156,7 @@
       { id: 5, title: "Proyecto 200", desc: "Sube tu archivo de Proyecto 200 en Excel.", action: "upload_excel" },
       { id: 6, title: "Entrevista de Carrera", desc: "Entrevista con el Director Comercial o General.", action: "wait_interview" },
       { id: 7, title: "Envío de Documentación", desc: "Documentación completa para tu alta.", action: "upload_docs" },
-      { id: 8, title: "¡Bienvenido al Equipo!", desc: "El proceso ha concluido exitosamente.", action: null }
+      { id: 8, title: "¡Bienvenido al Equipo!", desc: "El proceso ha concluido exitosamente.", action: "welcome_page" }
     ];
 
     let currentUser = null;
@@ -340,6 +340,11 @@
             actionHtml = `
               <div class="action-area">
                 <p class="text-sm text-primary"><i class="fas fa-calendar-check mr-2"></i> Nos comunicaremos contigo para agendar tu cita.</p>
+              </div>`;
+          } else if (step.action === 'welcome_page') {
+            actionHtml = `
+              <div class="action-area">
+                <button class="btn btn-primary" onclick="window.location.href='bienvenida.html'">Continuar <i class="fas fa-arrow-right ml-2"></i></button>
               </div>`;
           }
         }
