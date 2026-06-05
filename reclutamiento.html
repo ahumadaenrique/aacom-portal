@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal de Reclutamiento - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .auth-container {
+      max-width: 450px;
+      margin: 4rem auto;
+      background: var(--bg-card);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--bg-alt);
+    }
+    .auth-tab {
+      flex: 1;
+      text-align: center;
+      padding: 1rem;
+      cursor: pointer;
+      font-weight: 600;
+      color: var(--text-muted);
+      transition: var(--transition);
+    }
+    .auth-tab.active {
+      color: var(--primary);
+      border-bottom: 2px solid var(--primary);
+      margin-bottom: -2px;
+    }
+    .auth-form {
+      display: none;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    .auth-form.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .form-control {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--bg-alt);
+      border-radius: 0.5rem;
+      background: var(--bg-light);
+      color: var(--text-dark);
+      font-family: inherit;
+    }
+    .form-control:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .error-msg {
+      color: #ef4444;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+  </style>
+</head>
+<body class="bg-light">
+
+  <nav class="navbar">
+    <div class="container flex justify-between items-center">
+      <a href="index.html" class="nav-brand"><img src="assets/logo.png" alt="AACOM Seguros"></a>
+      <a href="index.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Volver al Inicio</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="auth-container">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl font-bold">Portal de Candidatos</h2>
+        <p class="text-muted text-sm mt-2">Únete al equipo AACOM y comienza tu proceso de selección.</p>
+      </div>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Iniciar Sesión</div>
+        <div class="auth-tab" id="tab-register" onclick="switchTab('register')">Registrarse</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active">
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="login-email" class="form-control" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="login-password" class="form-control" required placeholder="********">
+        </div>
+        <div id="login-error" class="error-msg"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Ingresar al Portal</button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="register-form" class="auth-form">
+        <div class="form-group">
+          <label>Nombre Completo</label>
+          <input type="text" id="reg-name" class="form-control" required placeholder="Ej. Juan Pérez">
+        </div>
+        <div class="form-group">
+          <label>Número de Contacto</label>
+          <input type="tel" id="reg-phone" class="form-control" required placeholder="55 1234 5678">
+        </div>
+        <div class="form-group">
+          <label>Correo Electrónico</label>
+          <input type="email" id="reg-email" class="form-control" required placeholder="tu@correo.com">
+        </div>
+        <div class="form-group">
+          <label>Contraseña</label>
+          <input type="password" id="reg-password" class="form-control" required minlength="6" placeholder="Mínimo 6 caracteres">
+        </div>
+        <div id="reg-error" class="error-msg"></div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Crear Cuenta e Iniciar Proceso</button>
+      </form>
+
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tab) {
+      document.getElementById('tab-login').classList.remove('active');
+      document.getElementById('tab-register').classList.remove('active');
+      document.getElementById('login-form').classList.remove('active');
+      document.getElementById('register-form').classList.remove('active');
+
+      document.getElementById('tab-' + tab).classList.add('active');
+      document.getElementById(tab + '-form').classList.add('active');
+    }
+  </script>
+
+  <!-- Firebase Logic -->
+  <script type="module">
+    import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc } from './firebase-config.js';
+
+    // REGISTRO
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('reg-email').value;
+      const pass = document.getElementById('reg-password').value;
+      const name = document.getElementById('reg-name').value;
+      const phone = document.getElementById('reg-phone').value;
+      const errorDiv = document.getElementById('reg-error');
+      
+      try {
+        errorDiv.style.display = 'none';
+        const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+        const user = userCredential.user;
+        
+        // Guardar perfil en Firestore e iniciar Etapa 1
+        await setDoc(doc(db, "users", user.uid), {
+          nombre: name,
+          correo: email,
+          telefono: phone,
+          rol: "candidato",
+          etapaActual: 2, // 1 está completada (Registro), empezamos en 2 (Subir CV)
+          fechaRegistro: new Date().toISOString(),
+          estadoEvaluacion: "pendiente"
+        });
+
+        alert("Cuenta creada con éxito. Redirigiendo al portal...");
+        window.location.href = "dashboard-candidato.html";
+        
+      } catch (error) {
+        errorDiv.textContent = "Error al registrarse: " + error.message;
+        errorDiv.style.display = 'block';
+      }
+    });
+
+    // LOGIN
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      const errorDiv = document.getElementById('login-error');
+      
+      try {
+        errorDiv.style.display = 'none';
+        await signInWithEmailAndPassword(auth, email, pass);
+        // Redirigir al check de rol
+        window.location.href = "check-role.html";
+      } catch (error) {
+        errorDiv.textContent = "Credenciales incorrectas o usuario no encontrado.";
+        errorDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

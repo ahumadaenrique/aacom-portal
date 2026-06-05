@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Prueba POP - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <style>
+    body { background: var(--bg-dark); color: white; padding-bottom: 5rem; }
+    .test-header {
+      background: var(--bg-card);
+      padding: 2rem 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 2rem;
+    }
+    .question-card {
+      background: var(--bg-card);
+      padding: 2rem;
+      border-radius: 1rem;
+      margin-bottom: 1.5rem;
+      border: 1px solid rgba(255,255,255,0.05);
+    }
+    .question-text {
+      font-size: 1.1rem;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    .options-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+    }
+    .option-label {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem;
+      background: rgba(255,255,255,0.05);
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .option-label:hover {
+      background: rgba(255,255,255,0.1);
+    }
+    input[type="radio"] {
+      width: 1.2rem;
+      height: 1.2rem;
+      accent-color: var(--primary);
+    }
+  </style>
+</head>
+<body>
+
+  <header class="test-header">
+    <div class="container text-center">
+      <h1 class="text-3xl font-bold text-gradient" id="test-title">Cargando Prueba...</h1>
+      <p class="text-muted mt-2" id="test-desc">Por favor espera.</p>
+    </div>
+  </header>
+
+  <div class="container" style="max-width: 800px;">
+    <form id="pop-form">
+      <div id="questions-container">
+        <!-- Preguntas dinámicas -->
+      </div>
+      
+      <div class="text-center mt-8">
+        <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;" id="btn-submit">Finalizar Prueba</button>
+        <p id="submit-error" style="color: #ef4444; margin-top: 1rem; display: none;">Por favor responde todas las preguntas.</p>
+      </div>
+    </form>
+  </div>
+
+  <script type="module">
+    import { auth, db, onAuthStateChanged, doc, updateDoc } from './firebase-config.js';
+
+    let currentUser = null;
+    let testData = null;
+
+    // Verificar autenticación
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        currentUser = user;
+        loadTest();
+      } else {
+        window.location.href = "reclutamiento.html";
+      }
+    });
+
+    async function loadTest() {
+      try {
+        const response = await fetch('assets/pop_test.json');
+        testData = await response.json();
+        
+        document.getElementById('test-title').textContent = testData.test_metadata.name;
+        document.getElementById('test-desc').textContent = testData.test_metadata.description;
+
+        const container = document.getElementById('questions-container');
+        container.innerHTML = '';
+
+        testData.preguntas.forEach((q, index) => {
+          const card = document.createElement('div');
+          card.className = 'question-card';
+          
+          let optionsHtml = '';
+          testData.escala_evaluacion.forEach(opt => {
+            optionsHtml += `
+              <label class="option-label">
+                <input type="radio" name="q_${q.id}" value="${opt.valor}" required>
+                ${opt.etiqueta}
+              </label>
+            `;
+          });
+
+          card.innerHTML = `
+            <div class="question-text">${index + 1}. ${q.texto}</div>
+            <div class="options-group">
+              ${optionsHtml}
+            </div>
+          `;
+          container.appendChild(card);
+        });
+
+      } catch (error) {
+        console.error("Error al cargar la prueba:", error);
+        alert("Hubo un error al cargar la prueba. Intenta más tarde.");
+      }
+    }
+
+    document.getElementById('pop-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(e.target);
+      let totalPuntaje = 0;
+      let maxPuntaje = testData.preguntas.length * 5;
+      
+      const respuestas = {};
+
+      for (let q of testData.preguntas) {
+        const valorStr = formData.get(`q_${q.id}`);
+        if (!valorStr) {
+          document.getElementById('submit-error').style.display = 'block';
+          return;
+        }
+        
+        const valorSeleccionado = parseInt(valorStr);
+        let puntajeReal = 0;
+
+        // Lógica de puntuación
+        if (q.tipo_puntuacion === "directa") {
+          puntajeReal = valorSeleccionado;
+        } else if (q.tipo_puntuacion === "inversa") {
+          puntajeReal = 6 - valorSeleccionado; // 6 - valor
+        }
+
+        respuestas[q.id] = {
+          valorOriginal: valorSeleccionado,
+          puntajeReal: puntajeReal,
+          dimension: q.dimension_id
+        };
+
+        totalPuntaje += puntajeReal;
+      }
+
+      const porcentaje = (totalPuntaje / maxPuntaje) * 100;
+      let color = "";
+      let estadoEvaluacion = "";
+
+      if (porcentaje >= 80) {
+        color = "Verde";
+        estadoEvaluacion = "aprobado";
+      } else if (porcentaje >= 60) {
+        color = "Amarillo";
+        estadoEvaluacion = "pendiente_revision";
+      } else {
+        color = "Rojo";
+        estadoEvaluacion = "rechazado";
+      }
+
+      document.getElementById('btn-submit').textContent = "Guardando...";
+      document.getElementById('btn-submit').disabled = true;
+
+      try {
+        await updateDoc(doc(db, "users", currentUser.uid), {
+          etapaActual: 4, // Avanza a la etapa 4 (Primera Cita)
+          estadoEvaluacion: estadoEvaluacion,
+          resultadoPOP: {
+            color: color,
+            porcentaje: Math.round(porcentaje),
+            detalles: respuestas
+          }
+        });
+
+        window.location.href = "dashboard-candidato.html";
+      } catch (error) {
+        console.error(error);
+        alert("Error al guardar resultados.");
+        document.getElementById('btn-submit').textContent = "Finalizar Prueba";
+        document.getElementById('btn-submit').disabled = false;
+      }
+    });
+
+  </script>
+</body>
+</html>
