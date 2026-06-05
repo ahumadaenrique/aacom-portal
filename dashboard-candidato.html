@@ -6,6 +6,8 @@
   <title>Mi Proceso - AACOM</title>
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
   <style>
     body { background: var(--bg-alt); color: var(--text-main); }
     .dashboard-header {
@@ -150,7 +152,7 @@
       { id: 1, title: "Registro", desc: "Creación de perfil en el portal.", action: null },
       { id: 2, title: "Revisión de CV", desc: "Sube tu currículum actualizado para que nuestro equipo lo revise.", action: "upload_cv" },
       { id: 3, title: "Prueba POP", desc: "Prueba de Orientación de Perfil Comercial.", action: "take_test" },
-      { id: 4, title: "Primera Cita", desc: "Entrevista inicial para conocer a la empresa.", action: "wait_interview" },
+      { id: 4, title: "Primera Cita", desc: "Agenda tu entrevista inicial para conocer la empresa.", action: "schedule_interview_1" },
       { id: 5, title: "Proyecto 200", desc: "Sube tu archivo de Proyecto 200 en Excel.", action: "upload_excel" },
       { id: 6, title: "Entrevista de Carrera", desc: "Entrevista con el Director Comercial o General.", action: "wait_interview" },
       { id: 7, title: "Envío de Documentación", desc: "Documentación completa para tu alta.", action: "upload_docs" },
@@ -251,6 +253,12 @@
                   <button class="btn btn-primary btn-sm" onclick="uploadFile('docs-upload', 'docs_url', 8)">Enviar Documentos</button>
                 </div>
                 <p id="upload-status-docs" class="text-sm mt-2" style="color:var(--primary);"></p>
+              </div>`;
+          } else if (step.action === 'schedule_interview_1') {
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm mb-3">Haz clic en el botón de abajo para elegir el día y hora de tu entrevista inicial.</p>
+                <button class="btn btn-primary" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/TU_ENLACE_AQUI'});return false;"><i class="far fa-calendar-alt mr-2"></i> Agendar Cita en Calendly</button>
               </div>`;
           } else if (step.action === 'wait_interview') {
             actionHtml = `
