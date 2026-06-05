@@ -7,11 +7,12 @@
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background: var(--bg-dark); color: white; }
+    body { background: var(--bg-alt); color: var(--text-main); }
     .dashboard-header {
       background: var(--bg-card);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       padding: 1rem 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
     .timeline {
       max-width: 800px;
@@ -31,7 +32,7 @@
       top: 3rem;
       bottom: -2rem;
       width: 2px;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.1);
       z-index: 0;
     }
     .step:last-child::before { display: none; }
@@ -40,19 +41,20 @@
       width: 2.5rem;
       height: 2.5rem;
       border-radius: 50%;
-      background: var(--bg-alt);
+      background: var(--bg-light);
       color: var(--text-muted);
       display: flex;
       align-items: center;
       justify-content: center;
       font-weight: bold;
       z-index: 1;
-      border: 2px solid var(--bg-card);
+      border: 2px solid var(--bg-alt);
       flex-shrink: 0;
     }
     .step.completed .step-icon {
       background: var(--primary);
       color: white;
+      border-color: var(--primary);
     }
     .step.active .step-icon {
       background: var(--bg-card);
@@ -65,15 +67,16 @@
       padding: 1.5rem;
       border-radius: 1rem;
       flex: 1;
-      border: 1px solid rgba(255,255,255,0.05);
+      border: 1px solid rgba(0,0,0,0.05);
       opacity: 0.6;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
     .step.completed .step-content, .step.active .step-content {
       opacity: 1;
     }
     .step.active .step-content {
-      border-color: rgba(35, 151, 111, 0.3);
-      box-shadow: 0 4px 20px rgba(35, 151, 111, 0.1);
+      border-color: rgba(99, 192, 165, 0.3);
+      box-shadow: 0 10px 20px rgba(99, 192, 165, 0.1);
     }
     
     .step-title {
@@ -88,15 +91,16 @@
       font-size: 0.8rem;
       padding: 0.2rem 0.6rem;
       border-radius: 1rem;
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.05);
+      color: var(--text-muted);
     }
-    .step.completed .step-status { background: rgba(35, 151, 111, 0.2); color: var(--primary); }
-    .step.active .step-status { background: rgba(255, 255, 255, 0.1); color: white; }
+    .step.completed .step-status { background: rgba(99, 192, 165, 0.15); color: var(--primary); }
+    .step.active .step-status { background: var(--primary); color: white; }
 
     .action-area {
       margin-top: 1rem;
       padding-top: 1rem;
-      border-top: 1px solid rgba(255,255,255,0.05);
+      border-top: 1px solid rgba(0,0,0,0.05);
     }
     .file-input-wrapper {
       display: flex;
@@ -105,21 +109,22 @@
     }
     .file-input { display: none; }
     .file-label {
-      background: rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.05);
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
       cursor: pointer;
       font-size: 0.9rem;
       transition: var(--transition);
+      color: var(--text-main);
     }
-    .file-label:hover { background: rgba(255,255,255,0.2); }
+    .file-label:hover { background: rgba(0,0,0,0.1); }
   </style>
 </head>
 <body>
 
   <header class="dashboard-header">
     <div class="container flex justify-between items-center">
-      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; filter: brightness(0) invert(1);">
+      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px;">
       <div class="flex items-center gap-4">
         <span id="user-name" class="text-muted">Cargando perfil...</span>
         <button id="btn-logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Cerrar Sesión</button>

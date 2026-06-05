@@ -7,16 +7,15 @@
   <link rel="stylesheet" href="index.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { background: var(--bg-dark); color: white; padding-bottom: 5rem; }
+    body { background: var(--bg-alt); color: var(--text-main); padding-bottom: 5rem; }
     .dashboard-header {
       background: var(--bg-card);
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
       padding: 1rem 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
     .admin-container {
-      max-width: 1200px;
       margin: 3rem auto;
-      padding: 0 1rem;
     }
     .candidates-table {
       width: 100%;
@@ -24,49 +23,37 @@
       background: var(--bg-card);
       border-radius: 1rem;
       overflow: hidden;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.05);
     }
     .candidates-table th, .candidates-table td {
       padding: 1rem 1.5rem;
       text-align: left;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
     }
     .candidates-table th {
-      background: rgba(0,0,0,0.2);
+      background: var(--bg-alt);
       font-weight: 600;
       color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
     }
     .candidates-table tr:hover {
-      background: rgba(255,255,255,0.02);
+      background: rgba(0,0,0,0.02);
     }
-    
-    .badge-pop {
-      padding: 0.2rem 0.6rem;
-      border-radius: 1rem;
-      font-size: 0.8rem;
-      font-weight: bold;
-      color: white;
-    }
-    .badge-verde { background: #10b981; }
-    .badge-amarillo { background: #f59e0b; }
-    .badge-rojo { background: #ef4444; }
-    .badge-gris { background: #64748b; }
+    .badge-verde { background: rgba(34, 197, 94, 0.1); color: #16a34a; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
+    .badge-amarillo { background: rgba(234, 179, 8, 0.1); color: #ca8a04; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
+    .badge-rojo { background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
 
-    /* Modal Styles */
-    .modal-overlay {
+    .modal {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
-      display: flex;
+      background: rgba(0,0,0,0.6);
+      display: none;
       align-items: center;
       justify-content: center;
       z-index: 1000;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s;
-    }
-    .modal-overlay.active {
-      opacity: 1;
       pointer-events: auto;
     }
     .modal-content {
@@ -113,7 +100,7 @@
 
   <header class="dashboard-header">
     <div class="container flex justify-between items-center">
-      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; filter: brightness(0) invert(1);">
+      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px;">
       <div class="flex items-center gap-4">
         <span class="badge" style="background: var(--primary);">Panel Administrador</span>
         <button id="btn-logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Cerrar Sesión</button>

@@ -6,67 +6,82 @@
   <title>Prueba POP - AACOM</title>
   <link rel="stylesheet" href="index.css">
   <style>
-    body { background: var(--bg-dark); color: white; padding-bottom: 5rem; }
-    .test-header {
+    body { background: var(--bg-alt); color: var(--text-main); padding-bottom: 5rem; }
+    .header {
       background: var(--bg-card);
-      padding: 2rem 0;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
-      margin-bottom: 2rem;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 1rem 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .test-container {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1rem;
     }
     .question-card {
       background: var(--bg-card);
       padding: 2rem;
       border-radius: 1rem;
-      margin-bottom: 1.5rem;
-      border: 1px solid rgba(255,255,255,0.05);
+      margin-bottom: 2rem;
+      border: 1px solid rgba(0,0,0,0.05);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
     }
     .question-text {
-      font-size: 1.1rem;
-      font-weight: 500;
+      font-size: 1.25rem;
+      font-weight: 600;
       margin-bottom: 1.5rem;
     }
-    .options-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.8rem;
+    .options-grid {
+      display: grid;
+      gap: 1rem;
     }
     .option-label {
       display: flex;
       align-items: center;
       gap: 1rem;
       padding: 1rem;
-      background: rgba(255,255,255,0.05);
       border-radius: 0.5rem;
+      background: var(--bg-alt);
       cursor: pointer;
+      border: 2px solid transparent;
       transition: var(--transition);
+      color: var(--text-main);
     }
     .option-label:hover {
-      background: rgba(255,255,255,0.1);
+      background: var(--bg-darker);
     }
-    input[type="radio"] {
+    .option-label input[type="radio"] {
       width: 1.2rem;
       height: 1.2rem;
       accent-color: var(--primary);
+    }
+    .option-label.selected {
+      border-color: var(--primary);
+      background: rgba(99, 192, 165, 0.1);
     }
   </style>
 </head>
 <body>
 
-  <header class="test-header">
+  <header class="header">
     <div class="container text-center">
       <h1 class="text-3xl font-bold text-gradient" id="test-title">Cargando Prueba...</h1>
       <p class="text-muted mt-2" id="test-desc">Por favor espera.</p>
     </div>
   </header>
 
-  <div class="container" style="max-width: 800px;">
+  <div class="container test-container">
     <form id="pop-form">
-      <div id="questions-container">
+      <div id="questions-container" class="options-grid">
         <!-- Preguntas dinámicas -->
       </div>
       
       <div class="text-center mt-8">
         <button type="submit" class="btn btn-primary" style="padding: 1rem 3rem; font-size: 1.1rem;" id="btn-submit">Finalizar Prueba</button>
+        <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; display: block; margin: 1rem auto;">
         <p id="submit-error" style="color: #ef4444; margin-top: 1rem; display: none;">Por favor responde todas las preguntas.</p>
       </div>
     </form>
@@ -115,7 +130,7 @@
 
           card.innerHTML = `
             <div class="question-text">${index + 1}. ${q.texto}</div>
-            <div class="options-group">
+            <div class="options-grid">
               ${optionsHtml}
             </div>
           `;
