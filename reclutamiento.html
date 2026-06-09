@@ -180,8 +180,7 @@
 
   <!-- Firebase Logic -->
   <script type="module">
-    import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc } from './firebase-config.js';
-    import { serverTimestamp } from "https://www.gstatic.com/firebasejs/11.1.0/firebase-firestore.js";
+    import { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, doc, setDoc, serverTimestamp } from './firebase-config.js';
 
     // REGISTRO
     document.getElementById('register-form').addEventListener('submit', async (e) => {
