@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Corporativo - AACOM Seguros</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container flex justify-between items-center">
+      <a href="index.html" class="nav-brand"><img src="assets/logo.png" alt="AACOM Seguros"></a>
+      <button class="mobile-menu-btn"><i class="fas fa-bars"></i></button>
+      <div class="nav-links" id="nav-links">
+        <a href="index.html" class="nav-link">Inicio</a>
+        <a href="unete.html" class="nav-link">Plan de Carrera</a>
+        <a href="blog.html" class="nav-link active">Blog</a>
+        <a href="seguros.html" class="nav-link">Seguros</a>
+        <a href="asistencias.html" class="nav-link">Asistencias</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="section" style="padding-top: 8rem; padding-bottom: 4rem;">
+    <div class="container text-center">
+      <h1 class="text-4xl md:text-5xl font-bold mb-4 animate-fade-in-up">Perspectivas y <span class="text-gradient">Tendencias</span></h1>
+      <p class="text-xl text-muted animate-fade-in-up delay-100">Artículos exclusivos sobre la industria, estrategias y desarrollo patrimonial.</p>
+    </div>
+  </section>
+
+  <!-- Blog Grid -->
+  <section class="section-alt" style="min-height: 50vh;">
+    <div class="container">
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8" id="blog-grid">
+        <!-- Loader -->
+        <div class="text-center w-full" style="grid-column: 1 / -1; padding: 3rem 0;">
+          <i class="fas fa-spinner fa-spin text-3xl" style="color: var(--primary);"></i>
+          <p class="text-muted mt-4">Cargando publicaciones...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Firebase Logic -->
+  <script type="module">
+    import { db, collection, getDocs } from './firebase-config.js';
+
+    async function loadBlogs() {
+      const grid = document.getElementById('blog-grid');
+      try {
+        const querySnapshot = await getDocs(collection(db, "blog_posts"));
+        
+        if (querySnapshot.empty) {
+          grid.innerHTML = '<div class="text-center w-full" style="grid-column: 1 / -1;"><p class="text-muted">Aún no hay artículos publicados. ¡Pronto subiremos contenido!</p></div>';
+          return;
+        }
+
+        let html = '';
+        querySnapshot.forEach((doc) => {
+          const post = doc.data();
+          const imageUrl = post.heroImage || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600&auto=format&fit=crop';
+          const title = post.title || 'Sin Título';
+          const excerpt = post.excerpt || '';
+          const slug = post.slug || doc.id;
+          
+          let dateStr = '';
+          if (post.publishedAt && post.publishedAt.toDate) {
+            dateStr = post.publishedAt.toDate().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+          }
+
+          html += `
+            <div class="card animate-fade-in-up" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+              <img src="${imageUrl}" alt="${title}" style="width: 100%; height: 200px; object-fit: cover;">
+              <div style="padding: 1.5rem; flex-grow: 1; display: flex; flex-direction: column;">
+                <p style="font-size: 0.85rem; color: var(--primary); margin-bottom: 0.5rem; font-weight: 600;">${dateStr}</p>
+                <h3 class="text-2xl mb-3">${title}</h3>
+                <p class="text-muted text-sm mb-4" style="flex-grow: 1;">${excerpt}</p>
+                <a href="articulo.html?id=${slug}" class="btn btn-outline" style="align-self: flex-start;">Leer Artículo</a>
+              </div>
+            </div>
+          `;
+        });
+        
+        grid.innerHTML = html;
+      } catch (error) {
+        console.error("Error loading blogs:", error);
+        grid.innerHTML = '<div class="text-center w-full" style="grid-column: 1 / -1;"><p style="color: #ef4444;">Error al cargar el blog.</p></div>';
+      }
+    }
+
+    loadBlogs();
+  </script>
+
+  <script src="main.js"></script>
+</body>
+</html>

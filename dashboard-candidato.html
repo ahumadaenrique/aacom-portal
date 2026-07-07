@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mi Proceso - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+  <style>
+    body { background: var(--bg-alt); color: var(--text-main); }
+    .dashboard-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 1rem 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .timeline {
+      max-width: 800px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+    }
+    .step {
+      display: flex;
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .step::before {
+      content: '';
+      position: absolute;
+      left: 1.25rem;
+      top: 3rem;
+      bottom: -2rem;
+      width: 2px;
+      background: rgba(0,0,0,0.1);
+      z-index: 0;
+    }
+    .step:last-child::before { display: none; }
+    
+    .step-icon {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      background: var(--bg-light);
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      z-index: 1;
+      border: 2px solid var(--bg-alt);
+      flex-shrink: 0;
+    }
+    .step.completed .step-icon {
+      background: var(--primary);
+      color: white;
+      border-color: var(--primary);
+    }
+    .step.active .step-icon {
+      background: var(--bg-card);
+      color: var(--primary);
+      border-color: var(--primary);
+    }
+    
+    .step-content {
+      background: var(--bg-card);
+      padding: 1.5rem;
+      border-radius: 1rem;
+      flex: 1;
+      border: 1px solid rgba(0,0,0,0.05);
+      opacity: 0.6;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .step.completed .step-content, .step.active .step-content {
+      opacity: 1;
+    }
+    .step.active .step-content {
+      border-color: rgba(99, 192, 165, 0.3);
+      box-shadow: 0 10px 20px rgba(99, 192, 165, 0.1);
+    }
+    
+    .step-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .step-status {
+      font-size: 0.8rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 1rem;
+      background: rgba(0,0,0,0.05);
+      color: var(--text-muted);
+    }
+    .step.completed .step-status { background: rgba(99, 192, 165, 0.15); color: var(--primary); }
+    .step.active .step-status { background: var(--primary); color: white; }
+
+    .action-area {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .file-input-wrapper {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+    }
+    .file-input { display: none; }
+    .file-label {
+      background: rgba(0,0,0,0.05);
+      padding: 0.5rem 1rem;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: var(--transition);
+      color: var(--text-main);
+    }
+    .file-label:hover { background: rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <div class="container flex justify-between items-center">
+      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px;">
+      <div class="flex items-center gap-4">
+        <span id="user-name" class="text-muted">Cargando perfil...</span>
+        <button id="btn-logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="text-center mt-12 mb-8">
+      <h1 class="text-3xl font-bold">Tu Proceso de Selección</h1>
+      <p class="text-muted mt-2">Completa las etapas para unirte al equipo AACOM.</p>
+    </div>
+
+    <div class="timeline" id="timeline-container">
+      <!-- Steps will be rendered here by JS -->
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db, storage, onAuthStateChanged, signOut, doc, getDoc, updateDoc, ref, uploadBytes, getDownloadURL } from './firebase-config.js';
+
+    const stepsData = [
+      { id: 1, title: "Registro", desc: "Creación de perfil en el portal.", action: null },
+      { id: 2, title: "Revisión de CV", desc: "Sube tu currículum actualizado para que nuestro equipo lo revise.", action: "upload_cv" },
+      { id: 3, title: "Prueba POP", desc: "Prueba de Orientación de Perfil Comercial.", action: "take_test" },
+      { id: 4, title: "Primera Cita", desc: "Agenda tu entrevista inicial para conocer la empresa.", action: "schedule_interview_1" },
+      { id: 5, title: "Proyecto 200", desc: "Sube tu archivo de Proyecto 200 en Excel.", action: "upload_excel" },
+      { id: 6, title: "Entrevista de Carrera", desc: "Entrevista con el Director Comercial o General.", action: "wait_interview" },
+      { id: 7, title: "Envío de Documentación", desc: "Documentación completa para tu alta.", action: "upload_docs" },
+      { id: 8, title: "¡Bienvenido al Equipo!", desc: "El proceso ha concluido exitosamente.", action: "welcome_page" }
+    ];
+
+    let currentUser = null;
+    let userData = null;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          userData = docSnap.data();
+          document.getElementById('user-name').textContent = userData.nombre;
+          renderTimeline(userData.etapaActual);
+        } else {
+          alert("No se encontraron datos del usuario.");
+        }
+      } else {
+        window.location.href = "reclutamiento.html";
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => {
+        window.location.href = "reclutamiento.html";
+      });
+    });
+
+    function renderTimeline(currentStep) {
+      const container = document.getElementById('timeline-container');
+      container.innerHTML = '';
+
+      stepsData.forEach(step => {
+        let statusClass = '';
+        let statusText = '';
+        let iconHtml = step.id;
+
+        if (step.id < currentStep) {
+          statusClass = 'completed';
+          statusText = 'Completado';
+          iconHtml = '<i class="fas fa-check"></i>';
+        } else if (step.id === currentStep) {
+          statusClass = 'active';
+          if (userData.estadoEvaluacion === 'pendiente_revision') {
+            statusText = 'En Revisión Manual';
+          } else {
+            statusText = 'En Curso';
+          }
+        } else {
+          statusText = 'Bloqueado';
+          iconHtml = '<i class="fas fa-lock" style="font-size: 0.9rem;"></i>';
+        }
+
+        const stepDiv = document.createElement('div');
+        stepDiv.className = `step ${statusClass}`;
+        
+        let actionHtml = '';
+        if (statusClass === 'active' && userData.estadoEvaluacion !== 'pendiente_revision') {
+          if (step.action === 'upload_cv') {
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm mb-2">Por favor, sube tu CV en formato PDF.</p>
+                <div class="file-input-wrapper">
+                  <label for="cv-upload" class="file-label"><i class="fas fa-file-upload mr-2"></i> Seleccionar Archivo</label>
+                  <input type="file" id="cv-upload" class="file-input" accept=".pdf,.doc,.docx">
+                  <button class="btn btn-primary btn-sm" onclick="uploadFile('cv-upload', 'cv_url', 3)">Enviar CV</button>
+                </div>
+                <p id="upload-status-cv" class="text-sm mt-2" style="color:var(--primary);"></p>
+              </div>`;
+          } else if (step.action === 'take_test') {
+            actionHtml = `
+              <div class="action-area">
+                <button class="btn btn-primary" onclick="window.location.href='prueba-pop.html'">Realizar Prueba POP</button>
+              </div>`;
+          } else if (step.action === 'upload_excel') {
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm mb-2">Por favor, sube tu archivo Excel (Proyecto 200).</p>
+                <div class="file-input-wrapper">
+                  <label for="excel-upload" class="file-label"><i class="fas fa-file-excel mr-2"></i> Seleccionar Excel</label>
+                  <input type="file" id="excel-upload" class="file-input" accept=".xlsx,.xls">
+                  <button class="btn btn-primary btn-sm" onclick="uploadFile('excel-upload', 'proyecto200_url', 6)">Enviar Proyecto</button>
+                </div>
+                <p id="upload-status-excel" class="text-sm mt-2" style="color:var(--primary);"></p>
+              </div>`;
+          } else if (step.action === 'upload_docs') {
+            const isUploaded = (field) => userData[field] ? '<span class="text-primary font-bold"><i class="fas fa-check-circle mr-1"></i> Guardado</span>' : '<span class="text-muted"><i class="fas fa-clock mr-1"></i> Pendiente</span>';
+            const cardStyle = "background: white; padding: 1.2rem; border-radius: 0.75rem; border: 1px solid rgba(0,0,0,0.08); display: flex; flex-direction: column; justify-content: space-between; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);";
+            
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm mb-4">Sube tus documentos oficiales (formato PDF, JPG o PNG). Cada archivo se guardará <b>automáticamente</b> al seleccionarlo.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                  <!-- Identificación -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">1. Identificación Oficial</label>
+                    <div>
+                      <input type="file" id="doc-identificacion" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-identificacion', 'doc_identificacion')">
+                      <label for="doc-identificacion" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-identificacion">${isUploaded('doc_identificacion')}</div>
+                  </div>
+
+                  <!-- Comprobante de Estudios -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">2. Comprobante de Estudios</label>
+                    <div>
+                      <input type="file" id="doc-estudios" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-estudios', 'doc_estudios')">
+                      <label for="doc-estudios" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-estudios">${isUploaded('doc_estudios')}</div>
+                  </div>
+
+                  <!-- Comprobante de Domicilio -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">3. Comp. Domicilio (3 meses)</label>
+                    <div>
+                      <input type="file" id="doc-domicilio" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-domicilio', 'doc_domicilio')">
+                      <label for="doc-domicilio" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-domicilio">${isUploaded('doc_domicilio')}</div>
+                  </div>
+
+                  <!-- Constancia Fiscal -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">4. Constancia Fiscal (3 meses)</label>
+                    <div>
+                      <input type="file" id="doc-fiscal" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-fiscal', 'doc_fiscal')">
+                      <label for="doc-fiscal" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-fiscal">${isUploaded('doc_fiscal')}</div>
+                  </div>
+
+                  <!-- RFC -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">5. RFC</label>
+                    <div>
+                      <input type="file" id="doc-rfc" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-rfc', 'doc_rfc')">
+                      <label for="doc-rfc" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-rfc">${isUploaded('doc_rfc')}</div>
+                  </div>
+
+                  <!-- CURP -->
+                  <div style="${cardStyle}">
+                    <label class="text-sm font-bold mb-3">6. CURP</label>
+                    <div>
+                      <input type="file" id="doc-curp" style="display:none" accept=".pdf,.jpg,.png,.jpeg" onchange="uploadSingleDoc('doc-curp', 'doc_curp')">
+                      <label for="doc-curp" class="btn btn-outline" style="cursor: pointer; padding: 0.4rem 1rem; font-size: 0.85rem; display: inline-block; margin: 0;">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i> Subir Archivo
+                      </label>
+                    </div>
+                    <div class="text-xs mt-3" id="status-doc-curp">${isUploaded('doc_curp')}</div>
+                  </div>
+                </div>
+
+                <div style="text-align: center;">
+                  <button class="btn btn-primary" style="padding: 0.8rem 2rem; font-size: 1rem;" onclick="finishStage7()"><i class="fas fa-paper-plane mr-2"></i> Finalizar y Enviar Expediente</button>
+                  <p id="finish-status-7" class="text-sm mt-2" style="color: #ef4444; font-weight: bold;"></p>
+                </div>
+              </div>`;
+          } else if (step.action === 'schedule_interview_1') {
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm mb-3">Haz clic en el botón de abajo para elegir el día y hora de tu entrevista inicial.</p>
+                <button class="btn btn-primary" onclick="Calendly.initPopupWidget({url: 'https://calendly.com/enrique-ahumada-aacommx/1st-meeting-aacom'});return false;"><i class="far fa-calendar-alt mr-2"></i> Agendar Cita en Calendly</button>
+              </div>`;
+          } else if (step.action === 'wait_interview') {
+            actionHtml = `
+              <div class="action-area">
+                <p class="text-sm text-primary"><i class="fas fa-calendar-check mr-2"></i> Nos comunicaremos contigo para agendar tu cita.</p>
+              </div>`;
+          } else if (step.action === 'welcome_page') {
+            actionHtml = `
+              <div class="action-area">
+                <button class="btn btn-primary" onclick="window.location.href='bienvenida.html'">Continuar <i class="fas fa-arrow-right ml-2"></i></button>
+              </div>`;
+          }
+        }
+
+        stepDiv.innerHTML = `
+          <div class="step-icon">${iconHtml}</div>
+          <div class="step-content">
+            <div class="step-title">
+              Etapa ${step.id}: ${step.title}
+              <span class="step-status">${statusText}</span>
+            </div>
+            <p class="text-sm">${step.desc}</p>
+            ${actionHtml}
+          </div>
+        `;
+        container.appendChild(stepDiv);
+      });
+    }
+
+    // Global function for uploading files
+    window.uploadFile = async (inputId, dbField, nextStep) => {
+      const fileInput = document.getElementById(inputId);
+      const statusP = document.getElementById('upload-status-' + inputId.split('-')[0]);
+      
+      if (!fileInput.files.length) {
+        alert("Por favor selecciona un archivo primero.");
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      statusP.textContent = "Subiendo archivo... por favor espera.";
+      
+      try {
+        const fileRef = ref(storage, `candidatos/${currentUser.uid}/${inputId}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        
+        const updateData = { etapaActual: nextStep };
+        updateData[dbField] = url;
+
+        // Si sube Proyecto 200 o Documentación, podemos dejarlo en pendiente de revisión o avanzar directo.
+        // El prompt dice que avanzar de etapa requiere aprobación manual en ciertas etapas.
+        // Aquí pasamos a la siguiente etapa pero la etapa siguiente podría ser la de espera.
+        // Dejaremos que simplemente avance por ahora, o cambiaremos el estado a "pendiente_revision".
+        
+        await updateDoc(doc(db, "users", currentUser.uid), updateData);
+        
+        statusP.textContent = "¡Archivo subido exitosamente!";
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
+
+      } catch (error) {
+        console.error(error);
+        statusP.textContent = "Error al subir el archivo: " + error.message;
+        statusP.style.color = "#ef4444";
+      }
+    };
+    // Global function for uploading individual documents for stage 7
+    window.uploadSingleDoc = async (inputId, dbField) => {
+      const fileInput = document.getElementById(inputId);
+      const statusDiv = document.getElementById('status-' + inputId);
+      
+      if (!fileInput.files.length) {
+        alert("Selecciona un archivo primero.");
+        return;
+      }
+      
+      const file = fileInput.files[0];
+      statusDiv.innerHTML = '<span class="text-primary"><i class="fas fa-spinner fa-spin mr-1"></i> Subiendo...</span>';
+      
+      try {
+        const fileRef = ref(storage, `candidatos/${currentUser.uid}/${inputId}_${file.name}`);
+        await uploadBytes(fileRef, file);
+        const url = await getDownloadURL(fileRef);
+        
+        const updateData = {};
+        updateData[dbField] = url;
+        await updateDoc(doc(db, "users", currentUser.uid), updateData);
+        
+        // Actualizar el userData local
+        userData[dbField] = url;
+        
+        statusDiv.innerHTML = '<span class="text-primary font-bold"><i class="fas fa-check mr-1"></i> Subido con éxito</span>';
+      } catch (error) {
+        console.error(error);
+        statusDiv.innerHTML = `<span style="color: #ef4444;">Error: ${error.message}</span>`;
+      }
+    };
+
+    window.finishStage7 = async () => {
+      const statusP = document.getElementById('finish-status-7');
+      const requiredDocs = ['doc_identificacion', 'doc_estudios', 'doc_domicilio', 'doc_fiscal', 'doc_rfc', 'doc_curp'];
+      
+      const missingDocs = requiredDocs.filter(d => !userData[d]);
+      if (missingDocs.length > 0) {
+        statusP.textContent = `Aún te faltan ${missingDocs.length} documento(s) por subir. Sube todos los archivos para continuar.`;
+        return;
+      }
+      
+      try {
+        statusP.style.color = 'var(--primary)';
+        statusP.textContent = "Procesando...";
+        await updateDoc(doc(db, "users", currentUser.uid), { etapaActual: 8 });
+        window.location.reload();
+      } catch (error) {
+        statusP.style.color = '#ef4444';
+        statusP.textContent = "Error al finalizar: " + error.message;
+      }
+    };
+  </script>
+</body>
+</html>

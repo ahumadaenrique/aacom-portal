@@ -1,0 +1,15 @@
+{
+  "name": "AACOM Alertas",
+  "short_name": "Alertas",
+  "start_url": "/notificaciones.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

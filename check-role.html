@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificando Sesión - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <style>
+    .loader-container {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-dark);
+      color: white;
+    }
+    .spinner {
+      border: 4px solid rgba(255,255,255,0.1);
+      border-left-color: var(--primary);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-bottom: 1rem;
+    }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="loader-container">
+    <div class="spinner"></div>
+    <h3>Iniciando sesión...</h3>
+  </div>
+
+  <script type="module">
+    import { auth, db, doc, getDoc, onAuthStateChanged } from './firebase-config.js';
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        try {
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            if (data.rol === "admin" || data.rol === "reclutador") {
+              window.location.href = "dashboard-admin.html";
+            } else {
+              window.location.href = "dashboard-candidato.html";
+            }
+          } else {
+            // Usuario sin rol definido, asume candidato por defecto
+            window.location.href = "dashboard-candidato.html";
+          }
+        } catch (error) {
+          console.error("Error al obtener el rol:", error);
+          alert("Error de conexión. Redirigiendo al portal...");
+          window.location.href = "dashboard-candidato.html";
+        }
+      } else {
+        window.location.href = "reclutamiento.html";
+      }
+    });
+  </script>
+</body>
+</html>

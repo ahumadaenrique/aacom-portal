@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Artículo - AACOM Seguros</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    .article-content {
+      max-width: 800px;
+      margin: 0 auto;
+      font-size: 1.1rem;
+      line-height: 1.8;
+      color: var(--text-dark);
+    }
+    .article-content h1, .article-content h2, .article-content h3 {
+      color: var(--text-dark);
+      margin-top: 2.5rem;
+      margin-bottom: 1.2rem;
+      line-height: 1.3;
+    }
+    .article-content h2 { font-size: 2rem; font-weight: 700; }
+    .article-content h3 { font-size: 1.5rem; font-weight: 600; }
+    .article-content p { margin-bottom: 1.5rem; }
+    .article-content ul, .article-content ol {
+      margin-bottom: 1.5rem;
+      padding-left: 1.5rem;
+    }
+    .article-content li { margin-bottom: 0.5rem; }
+    .article-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 0.75rem;
+      margin: 2.5rem 0;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    .article-content blockquote {
+      border-left: 4px solid var(--primary);
+      padding: 1rem 1.5rem;
+      background: var(--bg-alt);
+      border-radius: 0 0.5rem 0.5rem 0;
+      font-style: italic;
+      color: var(--text-muted);
+      margin: 2rem 0;
+    }
+    .hero-image-container {
+      width: 100%;
+      height: 450px;
+      margin-bottom: 3rem;
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    }
+    .hero-image-container img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="bg-light">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="container flex justify-between items-center">
+      <a href="index.html" class="nav-brand"><img src="assets/logo.png" alt="AACOM Seguros"></a>
+      <a href="blog.html" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;"><i class="fas fa-arrow-left mr-2"></i> Volver al Blog</a>
+    </div>
+  </nav>
+
+  <!-- Article Section -->
+  <section class="section" style="padding-top: 8rem; padding-bottom: 4rem; min-height: 80vh;">
+    <div class="container">
+      <div id="loader" class="text-center py-12">
+        <i class="fas fa-spinner fa-spin text-4xl" style="color: var(--primary);"></i>
+        <p class="text-muted mt-4">Cargando artículo...</p>
+      </div>
+
+      <div id="article-container" style="display: none;">
+        <div class="text-center mb-8 max-w-4xl mx-auto">
+          <p id="art-date" class="text-muted mb-3 font-semibold" style="color: var(--primary); text-transform: uppercase; letter-spacing: 1px; font-size: 0.85rem;"></p>
+          <h1 id="art-title" class="text-4xl md:text-5xl font-bold mb-6"></h1>
+        </div>
+
+        <div id="hero-img-box" class="hero-image-container" style="display: none;">
+          <img id="art-hero" src="" alt="Hero Image">
+        </div>
+
+        <div id="art-content" class="article-content"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Firebase Logic -->
+  <script type="module">
+    import { db, doc, getDoc } from './firebase-config.js';
+
+    async function loadArticle() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const slug = urlParams.get('id');
+
+      if (!slug) {
+        document.getElementById('loader').innerHTML = '<h2 class="text-2xl text-center">Artículo no encontrado.</h2>';
+        return;
+      }
+
+      try {
+        const docRef = doc(db, "blog_posts", slug);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const post = docSnap.data();
+          
+          document.getElementById('art-title').textContent = post.title;
+          document.getElementById('art-content').innerHTML = post.content;
+          
+          if (post.publishedAt && post.publishedAt.toDate) {
+            document.getElementById('art-date').textContent = post.publishedAt.toDate().toLocaleDateString('es-MX', { year: 'numeric', month: 'long', day: 'numeric' });
+          }
+
+          if (post.heroImage) {
+            document.getElementById('art-hero').src = post.heroImage;
+            document.getElementById('hero-img-box').style.display = 'block';
+          }
+
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('article-container').style.display = 'block';
+        } else {
+          document.getElementById('loader').innerHTML = '<h2 class="text-2xl text-center">Artículo no encontrado o ha sido eliminado.</h2>';
+        }
+      } catch (error) {
+        console.error("Error loading article:", error);
+        document.getElementById('loader').innerHTML = '<h2 class="text-2xl text-center" style="color: #ef4444;">Error al cargar el artículo.</h2>';
+      }
+    }
+
+    loadArticle();
+  </script>
+</body>
+</html>

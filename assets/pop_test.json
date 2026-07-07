@@ -1,0 +1,205 @@
+{
+  "test_metadata": {
+    "name": "Prueba de Orientación de Perfil Comercial (POP-Propio)",
+    "version": "1.0",
+    "description": "Evaluación psicométrica para medir el potencial de éxito, resiliencia y autogestión en perfiles comerciales."
+  },
+  "escala_evaluacion": [
+    {"valor": 1, "etiqueta": "Totalmente en desacuerdo"},
+    {"valor": 2, "etiqueta": "En desacuerdo"},
+    {"valor": 3, "etiqueta": "Neutral"},
+    {"valor": 4, "etiqueta": "De acuerdo"},
+    {"valor": 5, "etiqueta": "Totalmente de acuerdo"}
+  ],
+  "dimensiones": [
+    {
+      "id": "logro_empuje",
+      "nombre": "Orientación al Logro y Empuje (Drive)",
+      "descripcion": "Mide la ambición económica, competitividad y enfoque a resultados extraordinarios."
+    },
+    {
+      "id": "tolerancia_rechazo",
+      "nombre": "Tolerancia al Rechazo (Call Reluctance)",
+      "descripcion": "Mide la capacidad psicológica para soportar la negativa y la proactividad en la prospección."
+    },
+    {
+      "id": "autogestion",
+      "nombre": "Autogestión e Independencia",
+      "descripcion": "Mide la disciplina para trabajar de forma autónoma sin necesidad de supervisión constante."
+    },
+    {
+      "id": "coaching",
+      "nombre": "Receptividad al Coaching",
+      "descripcion": "Mide la apertura del candidato a recibir retroalimentación, estudiar y adaptar su metodología."
+    },
+    {
+      "id": "deseabilidad_social",
+      "nombre": "Escala de Control (Deseabilidad Social)",
+      "descripcion": "Detecta si el candidato está falseando la prueba o respondiendo bajo sesgo de perfección."
+    }
+  ],
+  "preguntas": [
+    {
+      "id": 1,
+      "dimension_id": "logro_empuje",
+      "texto": "Me fijo metas personales que superan lo que mis líderes esperan de mí.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 2,
+      "dimension_id": "logro_empuje",
+      "texto": "Prefiero un salario fijo y seguro que un ingreso variable basado en mis resultados.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 3,
+      "dimension_id": "logro_empuje",
+      "texto": "Considero que el éxito económico es uno de los principales indicadores de éxito en la vida.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 4,
+      "dimension_id": "logro_empuje",
+      "texto": "Me frustro rápidamente si no soy el mejor en las actividades en las que compito.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 5,
+      "dimension_id": "logro_empuje",
+      "texto": "Siento que ya he alcanzado la mayoría de mis grandes metas financieras.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 6,
+      "dimension_id": "logro_empuje",
+      "texto": "Disfruto competir con otros para ver quién obtiene los mejores números.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 7,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "No me tomo los rechazos profesionales como algo personal.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 8,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "Me genera mucha ansiedad la idea de llamar por teléfono a un prospecto que no está esperando mi llamada.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 9,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "Cuando alguien me dice un 'no' rotundo, pierdo la motivación para seguir intentándolo el resto del día.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 10,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "Me resulta incómodo iniciar una conversación de negocios con alguien que acabo de conocer en un evento social.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 11,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "Disfruto el reto intelectual de convencer a alguien que inicialmente se muestra muy escéptico.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 12,
+      "dimension_id": "tolerancia_rechazo",
+      "texto": "Prefiero que los clientes lleguen a mí en lugar de tener que salir a buscarlos.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 13,
+      "dimension_id": "autogestion",
+      "texto": "Llevo una agenda estricta y planifico mi semana con al menos un par de días de anticipación.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 14,
+      "dimension_id": "autogestion",
+      "texto": "Rindo mucho mejor cuando tengo a un supervisor indicándome las tareas específicas del día.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 15,
+      "dimension_id": "autogestion",
+      "texto": "Me cuesta trabajo empezar a trabajar temprano si estoy en mi casa sin supervisión.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 16,
+      "dimension_id": "autogestion",
+      "texto": "Si termino mis tareas antes de tiempo, busco qué más hacer para adelantar trabajo.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 17,
+      "dimension_id": "autogestion",
+      "texto": "A menudo siento que el día no me alcanza porque me distraigo con asuntos personales o redes sociales.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 18,
+      "dimension_id": "autogestion",
+      "texto": "Disfruto diseñar mis propios métodos de trabajo y ser dueño de mis horarios.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 19,
+      "dimension_id": "coaching",
+      "texto": "Busco activamente mentores o personas con más experiencia para que critiquen y evalúen mi desempeño.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 20,
+      "dimension_id": "coaching",
+      "texto": "Cuando recibo retroalimentación sobre un error, mi primera reacción instintiva es explicar por qué lo hice así.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 21,
+      "dimension_id": "coaching",
+      "texto": "Me adapto rápidamente si un formador me pide que cambie por completo una técnica que yo creía que funcionaba.",
+      "tipo_puntuacion": "directa"
+    },
+    {
+      "id": 22,
+      "dimension_id": "coaching",
+      "texto": "Creo que la experiencia de la 'calle' es mucho más valiosa que cualquier capacitación teórica en un aula.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 23,
+      "dimension_id": "coaching",
+      "texto": "Prefiero resolver los problemas a mi manera antes de pedir ayuda a mi promotor.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 24,
+      "dimension_id": "deseabilidad_social",
+      "texto": "Nunca he postergado una tarea importante, ni siquiera por un día.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 25,
+      "dimension_id": "deseabilidad_social",
+      "texto": "Jamás he sentido envidia del éxito de un compañero.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 26,
+      "dimension_id": "deseabilidad_social",
+      "texto": "Siempre escucharé a los demás sin interrumpir, sin importar qué tan enojado o cansado esté.",
+      "tipo_puntuacion": "inversa"
+    },
+    {
+      "id": 27,
+      "dimension_id": "deseabilidad_social",
+      "texto": "Nunca he dicho una pequeña mentira para salir de un apuro.",
+      "tipo_puntuacion": "inversa"
+    }
+  ]
+}

@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Reclutamiento - AACOM</title>
+  <link rel="stylesheet" href="index.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    body { background: var(--bg-alt); color: var(--text-main); padding-bottom: 5rem; }
+    .dashboard-header {
+      background: var(--bg-card);
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      padding: 1rem 0;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+    }
+    .admin-container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 1rem;
+    }
+    .candidates-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--bg-card);
+      border-radius: 1rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .candidates-table th, .candidates-table td {
+      padding: 1rem 1.5rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+    .candidates-table th {
+      background: var(--bg-alt);
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+    .candidates-table tr:hover {
+      background: rgba(0,0,0,0.02);
+    }
+    .badge-verde { background: rgba(34, 197, 94, 0.1); color: #16a34a; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
+    .badge-amarillo { background: rgba(234, 179, 8, 0.1); color: #ca8a04; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
+    .badge-rojo { background: rgba(239, 68, 68, 0.1); color: #dc2626; padding: 0.3rem 0.8rem; border-radius: 1rem; font-size: 0.85rem; font-weight: bold;}
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      backdrop-filter: blur(4px);
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: var(--bg-card);
+      width: 100%;
+      max-width: 900px;
+      border-radius: 1rem;
+      padding: 2rem;
+      position: relative;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .close-btn {
+      position: absolute;
+      top: 1.5rem;
+      right: 1.5rem;
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .close-btn:hover { color: var(--text-main); }
+    .modal-section {
+      margin-bottom: 1.5rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .file-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(0,0,0,0.05);
+      border-radius: 0.5rem;
+      color: var(--text-main);
+      text-decoration: none;
+      font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .file-link:hover { background: rgba(0,0,0,0.1); }
+
+    /* Estilos Reporte POP */
+    .report-grid { display: grid; grid-template-columns: 1fr; gap: 2rem; margin-top: 1rem; }
+    @media (min-width: 768px) { .report-grid { grid-template-columns: 1fr 1fr; } }
+    .dimension-row { margin-bottom: 1.5rem; }
+    .dim-name { display: flex; justify-content: space-between; font-size: 0.95rem; margin-bottom: 0.5rem; font-weight: 600; }
+    .progress-bg { background: var(--bg-alt); height: 1.5rem; border-radius: 1rem; overflow: hidden; position: relative; border: 1px solid rgba(0,0,0,0.05); }
+    .progress-bar { height: 100%; transition: width 1s ease-in-out; border-radius: 1rem; }
+    .progress-text { position: absolute; right: 0.75rem; top: 0; bottom: 0; line-height: 1.5rem; font-size: 0.8rem; color: rgba(255,255,255,0.9); font-weight: bold;}
+    
+    .alert-box { padding: 1rem; border-radius: 0.5rem; font-size: 0.9rem; margin-bottom: 1rem; border-left: 4px solid transparent; }
+    .alert-warning { background: #fef9c3; color: #854d0e; border-left-color: #eab308; }
+    .alert-danger { background: #fef2f2; color: #991b1b; border-left-color: #ef4444; }
+    .alert-success { background: #f0fdf4; color: #166534; border-left-color: #22c55e; }
+    
+    .question-list { list-style: disc; margin-left: 1.5rem; margin-top: 0.5rem; color: var(--text-muted); font-size: 0.9rem;}
+    .question-list li { margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+
+  <header class="dashboard-header">
+    <div class="container flex justify-between items-center">
+      <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px;">
+      <div class="flex items-center gap-4">
+        <span class="badge" style="background: rgba(99, 192, 165, 0.15); color: var(--primary); margin-bottom: 0;">Panel Administrador</span>
+        <button id="btn-logout" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">Cerrar Sesión</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-container">
+    <div class="mb-8 flex justify-between items-end">
+      <div>
+        <h1 class="text-3xl font-bold">Gestión de Candidatos</h1>
+        <p class="text-muted mt-2">Revisa, evalúa y avanza a los candidatos en su proceso de selección.</p>
+      </div>
+      <button class="btn btn-primary" onclick="loadCandidates()"><i class="fas fa-sync-alt mr-2"></i> Refrescar</button>
+    </div>
+
+    <table class="candidates-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Contacto</th>
+          <th>Etapa Actual</th>
+          <th>POP Score</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="candidates-body">
+        <tr><td colspan="6" class="text-center">Cargando candidatos...</td></tr>
+      </tbody>
+    </table>
+
+    <div id="old-candidates-wrapper" style="display: none; margin-top: 3rem;">
+      <button onclick="document.getElementById('old-candidates-container').classList.toggle('hidden')" class="btn btn-outline w-full" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.02); border: 1px dashed rgba(0,0,0,0.2);">
+        <span id="old-candidates-title"><i class="fas fa-archive mr-2"></i> Candidatos inactivos (>60 días)</span>
+        <i class="fas fa-chevron-down"></i>
+      </button>
+      <div id="old-candidates-container" class="hidden mt-4">
+        <table class="candidates-table">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Contacto</th>
+              <th>Etapa Actual</th>
+              <th>POP Score</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="old-candidates-body">
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detalles del Candidato -->
+  <div class="modal-overlay" id="candidate-modal">
+    <div class="modal-content">
+      <button class="close-btn" onclick="closeModal()"><i class="fas fa-times"></i></button>
+      
+      <!-- Contenedor para exportar a PDF -->
+      <div id="export-content" style="padding: 1rem; background: var(--bg-card);">
+        <div style="text-align: center; margin-bottom: 2rem;">
+          <img src="assets/logo.png" alt="AACOM Seguros" style="height: 40px; display: inline-block;">
+        </div>
+        <h2 class="text-2xl font-bold mb-1" id="m-name">Nombre Candidato</h2>
+        <p class="text-muted mb-4" id="m-contact">correo@ejemplo.com | 5555555555</p>
+        
+        <div class="modal-section">
+          <h3 class="text-lg font-bold mb-3">Progreso</h3>
+          <p><strong>Etapa:</strong> <span id="m-etapa" class="text-primary font-bold">4</span></p>
+          <p class="mt-2"><strong>Estado:</strong> <span id="m-estado">Aprobado</span></p>
+        </div>
+
+        <div class="modal-section">
+          <h3 class="text-xl font-bold mb-3 border-b pb-2">Antecedentes y Perfil</h3>
+          <div id="m-antecedentes-container"></div>
+        </div>
+
+        <div class="modal-section" style="border-bottom: none; padding-bottom: 0;">
+          <h3 class="text-xl font-bold mb-3 border-b pb-2">Diagnóstico Comercial (Prueba POP)</h3>
+          <div id="m-pop-container"></div>
+        </div>
+      </div>
+
+      <div class="modal-section" style="border-top: 1px solid rgba(0,0,0,0.1); padding-top: 1.5rem; margin-top: 2rem;">
+        <h3 class="text-lg font-bold mb-3">Archivos Adjuntos</h3>
+        <div class="flex gap-4 flex-wrap" id="m-files">
+          <!-- Links a CV, Excel, Docs -->
+        </div>
+      </div>
+
+      <div class="modal-section" style="border-bottom: none; margin-bottom: 0; padding-bottom: 0;">
+        <h3 class="text-lg font-bold mb-3">Acciones de Reclutador</h3>
+        <div class="flex gap-3 flex-wrap" id="m-actions">
+          <!-- Botones dinámicos para avanzar etapas o rechazar -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db, onAuthStateChanged, signOut, doc, getDoc, updateDoc, collection, getDocs } from './firebase-config.js';
+
+    let currentAdmin = null;
+    let allCandidates = [];
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists() && (docSnap.data().rol === "admin" || docSnap.data().rol === "reclutador")) {
+          currentAdmin = user;
+          loadCandidates();
+        } else {
+          alert("No tienes permisos de administrador.");
+          window.location.href = "check-role.html";
+        }
+      } else {
+        window.location.href = "reclutamiento.html";
+      }
+    });
+
+    document.getElementById('btn-logout').addEventListener('click', () => {
+      signOut(auth).then(() => window.location.href = "reclutamiento.html");
+    });
+
+    window.loadCandidates = async () => {
+      const tbody = document.getElementById('candidates-body');
+      tbody.innerHTML = '<tr><td colspan="6" class="text-center">Cargando candidatos...</td></tr>';
+      
+      try {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        allCandidates = [];
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          if (data.rol === "candidato") {
+            allCandidates.push({ id: doc.id, ...data });
+          }
+        });
+
+        renderTable();
+      } catch (error) {
+        console.error("Error cargando candidatos:", error);
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500">Error al cargar datos.</td></tr>';
+      }
+    };
+
+    function renderTable() {
+      const tbody = document.getElementById('candidates-body');
+      const tbodyOld = document.getElementById('old-candidates-body');
+      const oldWrapper = document.getElementById('old-candidates-wrapper');
+      const oldTitle = document.getElementById('old-candidates-title');
+
+      tbody.innerHTML = '';
+      tbodyOld.innerHTML = '';
+
+      if (allCandidates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay candidatos registrados.</td></tr>';
+        oldWrapper.style.display = 'none';
+        return;
+      }
+
+      const now = new Date();
+      let oldCandCount = 0;
+
+      allCandidates.forEach(cand => {
+        let popBadge = '<span class="badge-pop badge-gris">N/A</span>';
+        if (cand.resultadoPOP) {
+          const color = cand.resultadoPOP.color.toLowerCase();
+          popBadge = `<span class="badge-pop badge-${color}">${cand.resultadoPOP.color} (${cand.resultadoPOP.porcentaje}%)</span>`;
+        }
+
+        let startDateStr = 'Fecha desconocida';
+        let daysSince = 0;
+        if (cand.createdAt) {
+          const dateObj = cand.createdAt.toDate ? cand.createdAt.toDate() : new Date(cand.createdAt.seconds * 1000);
+          startDateStr = dateObj.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' });
+          const diffTime = Math.abs(now - dateObj);
+          daysSince = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+        }
+
+        const isAdvanced = cand.etapaActual >= 7;
+        const rowStyle = isAdvanced ? 'background-color: rgba(16, 185, 129, 0.08); border-left: 4px solid var(--primary);' : '';
+        const starIcon = isAdvanced ? '<i class="fas fa-star text-yellow-500 mr-2" title="Candidato Finalista"></i>' : '';
+
+        const tr = document.createElement('tr');
+        if(isAdvanced) tr.style = rowStyle;
+        
+        tr.innerHTML = `
+          <td class="font-bold">${starIcon}${cand.nombre}</td>
+          <td>
+            <div class="text-sm">${cand.correo}</div>
+            <div class="text-sm text-muted">${cand.telefono}</div>
+            <div class="text-xs mt-1" style="color:var(--primary); font-weight:bold;"><i class="far fa-calendar-alt"></i> Inicio: ${startDateStr} ${daysSince > 0 ? `(${daysSince} d)` : ''}</div>
+          </td>
+          <td class="font-bold">Etapa ${cand.etapaActual}</td>
+          <td>${popBadge}</td>
+          <td>${formatEstado(cand.estadoEvaluacion)}</td>
+          <td><button class="btn btn-outline btn-sm" onclick="openModal('${cand.id}')">Ver Detalle</button></td>
+        `;
+        
+        if (daysSince > 60) {
+          tbodyOld.appendChild(tr);
+          oldCandCount++;
+        } else {
+          tbody.appendChild(tr);
+        }
+      });
+
+      if (oldCandCount > 0) {
+        oldWrapper.style.display = 'block';
+        oldTitle.innerHTML = `<i class="fas fa-archive mr-2"></i> Candidatos inactivos (>60 días) (${oldCandCount})`;
+      } else {
+        oldWrapper.style.display = 'none';
+      }
+    }
+
+    function formatEstado(estado) {
+      if (estado === 'pendiente_revision') return '<span style="color:#f59e0b">En Revisión</span>';
+      if (estado === 'aprobado') return '<span style="color:#10b981">Aprobado</span>';
+      if (estado === 'rechazado') return '<span style="color:#ef4444">Rechazado</span>';
+      return '<span style="color:#64748b">Activo</span>';
+    }
+
+    window.openModal = (uid) => {
+      const cand = allCandidates.find(c => c.id === uid);
+      if (!cand) return;
+
+      document.getElementById('m-name').textContent = cand.nombre;
+      document.getElementById('m-contact').textContent = `${cand.correo} | ${cand.telefono}`;
+      document.getElementById('m-etapa').textContent = cand.etapaActual;
+      document.getElementById('m-estado').innerHTML = formatEstado(cand.estadoEvaluacion);
+
+      // Antecedentes
+      const antContainer = document.getElementById('m-antecedentes-container');
+      if (cand.antecedentes) {
+        const a = cand.antecedentes;
+        
+        const formatFiltro = (valor, esRechazo) => esRechazo ? `<span style="color: #ef4444; font-weight: bold;">${valor} <i class="fas fa-times-circle"></i></span>` : valor;
+        
+        const escRechazo = (a.ant_escolaridad === 'Secundaria' || a.ant_escolaridad === 'Preparatoria');
+        const ciudadRechazo = (a.ant_ciudad === '0 a 3 años');
+        const interesRechazo = (parseInt(a.ant_interes_emprender) <= 6);
+
+        antContainer.innerHTML = `
+          <div class="grid md:grid-cols-2 gap-4 text-sm">
+            <div><strong>Escolaridad:</strong> ${formatFiltro(a.ant_escolaridad, escRechazo)}</div>
+            <div><strong>Titulado:</strong> ${a.ant_titulado}</div>
+            <div><strong>Años en la ciudad:</strong> ${formatFiltro(a.ant_ciudad, ciudadRechazo)}</div>
+            <div><strong>Situación actual:</strong> ${a.ant_situacion}</div>
+            <div><strong>Meses desempleado:</strong> ${a.ant_meses_desempleado}</div>
+            <div><strong>Ingresos actuales:</strong> ${a.ant_ingresos}</div>
+            <div><strong>Gastos actuales:</strong> ${a.ant_gastos}</div>
+            <div><strong>Interés emprender (1-10):</strong> ${formatFiltro(a.ant_interes_emprender, interesRechazo)}</div>
+            <div><strong>Ingreso entorno:</strong> ${a.ant_entorno_ingresos}</div>
+            <div><strong>Horas trabajo:</strong> ${a.ant_horas}</div>
+            <div><strong>Necesita generar:</strong> ${a.ant_necesidad_generar}</div>
+            <div><strong>Exp. en Ventas:</strong> ${a.ant_exp_ventas}</div>
+            <div><strong>Seguro de vida:</strong> ${a.ant_seguro_vida}</div>
+            <div><strong>Medio de contacto:</strong> ${a.ant_medio}</div>
+            <div><strong>Ganado por comisiones:</strong> ${a.ant_comisiones}</div>
+            <div><strong>Disponibilidad 100%:</strong> ${a.ant_100_tiempo}</div>
+            <div><strong>Compromiso 3 meses:</strong> ${a.ant_compromiso}</div>
+          </div>
+        `;
+      } else {
+        antContainer.innerHTML = '<p class="text-muted">No hay datos de antecedentes registrados.</p>';
+      }
+
+      // POP Test Result - Detailed Report
+      const popContainer = document.getElementById('m-pop-container');
+      if (cand.resultadoPOP && cand.resultadoPOP.detalles) {
+        
+        // Calcular dimensiones
+        const dimData = {
+          logro_empuje: { total: 0, max: 0, nombre: "Orientación al Logro y Empuje", color: "#3b82f6", pregs: ["¿Qué meta financiera o profesional te has fijado para este año y qué estás haciendo para lograrla?", "¿Describe una vez que te esforzaste al máximo por conseguir algo que parecía imposible?"] },
+          tolerancia_rechazo: { total: 0, max: 0, nombre: "Tolerancia al Rechazo (Call Reluctance)", color: "#8b5cf6", pregs: ["Cuéntame de una ocasión en la que un cliente te dijo un NO rotundo. ¿Cómo manejaste la frustración?", "¿Qué estrategia usas para mantener la motivación después de una racha de llamadas sin éxito?"] },
+          autogestion: { total: 0, max: 0, nombre: "Autogestión e Independencia", color: "#f59e0b", pregs: ["¿Cómo organizas tu semana laboral cuando no tienes a un jefe supervisando tus horarios?", "¿Qué haces cuando te distraes trabajando desde casa o fuera de la oficina?"] },
+          coaching: { total: 0, max: 0, nombre: "Receptividad al Coaching", color: "#10b981", pregs: ["Describe una vez que recibiste una crítica muy dura sobre tu trabajo. ¿Cómo reaccionaste y qué cambiaste?", "¿Estás dispuesto a cambiar por completo tu forma de vender si te enseñamos un método distinto?"] },
+          deseabilidad_social: { total: 0, max: 0, nombre: "Escala de Sinceridad", color: "#64748b", pregs: [] }
+        };
+
+        const detalles = cand.resultadoPOP.detalles;
+        for (let key in detalles) {
+          const d = detalles[key];
+          if (dimData[d.dimension]) {
+            dimData[d.dimension].total += d.puntajeReal;
+            dimData[d.dimension].max += 5;
+          }
+        }
+
+        // Evaluar Fiabilidad
+        const deseabilidad = dimData.deseabilidad_social;
+        const fiabilidadPct = Math.round((deseabilidad.total / deseabilidad.max) * 100);
+        let fiabilidadHtml = '';
+        if (fiabilidadPct < 50) {
+          fiabilidadHtml = `<div class="alert-box alert-danger"><i class="fas fa-exclamation-triangle"></i> <strong>Resultados NO FIABLES:</strong> El candidato tiene un puntaje muy bajo en la Escala de Sinceridad, lo que indica que intentó contestar el cuestionario de una forma socialmente deseable (mintió para verse perfecto). Proceda con extrema precaución.</div>`;
+        } else if (fiabilidadPct < 70) {
+          fiabilidadHtml = `<div class="alert-box alert-warning"><i class="fas fa-exclamation-circle"></i> <strong>Fiabilidad Dudosa:</strong> El candidato mostró cierta tendencia a responder lo que el reclutador quiere escuchar. Valide sus respuestas en la entrevista.</div>`;
+        } else {
+          fiabilidadHtml = `<div class="alert-box alert-success"><i class="fas fa-check-circle"></i> <strong>Resultados Fiables:</strong> El candidato contestó con sinceridad y es autocrítico con sus áreas de oportunidad.</div>`;
+        }
+
+        // Recomendación Final
+        let semaforo = '';
+        const globalPct = cand.resultadoPOP.porcentaje;
+        if (globalPct >= 80) semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #16a34a;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Proceder (Verde)</h4></div>`;
+        else if (globalPct >= 60) semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #ca8a04;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Proceder con Precaución (Amarillo)</h4></div>`;
+        else semaforo = `<div class="text-center my-4"><div style="font-size: 3rem; color: #dc2626;"><i class="fas fa-traffic-light"></i></div><h4 class="font-bold text-lg mt-2">Recomendación: Orientar hacia Otra Carrera (Rojo)</h4></div>`;
+
+        // Generar Barras y Sugerencias
+        let barrasHtml = '';
+        let sugerenciasHtml = '';
+        
+        ['logro_empuje', 'tolerancia_rechazo', 'autogestion', 'coaching'].forEach(dimKey => {
+          const dim = dimData[dimKey];
+          const pct = Math.round((dim.total / dim.max) * 100);
+          
+          let barColor = dim.color;
+          if (pct < 60) barColor = "#ef4444"; // Rojo si está deficiente
+          
+          barrasHtml += `
+            <div class="dimension-row">
+              <div class="dim-name">
+                <span>${dim.nombre}</span>
+                <span>${pct}%</span>
+              </div>
+              <div class="progress-bg">
+                <div class="progress-bar" style="width: ${pct}%; background-color: ${barColor};"></div>
+              </div>
+            </div>
+          `;
+
+          if (pct < 70) {
+            sugerenciasHtml += `
+              <div class="mt-4">
+                <strong style="color: ${barColor};"><i class="fas fa-search"></i> Explorar: ${dim.nombre}</strong>
+                <ul class="question-list">
+                  <li>${dim.pregs[0]}</li>
+                  <li>${dim.pregs[1]}</li>
+                </ul>
+              </div>
+            `;
+          }
+        });
+
+        if (sugerenciasHtml === '') {
+          sugerenciasHtml = '<p class="text-muted mt-2">El candidato tiene un perfil muy sólido. No hay áreas de alto riesgo detectadas.</p>';
+        }
+
+        popContainer.innerHTML = `
+          ${fiabilidadHtml}
+          <div class="report-grid">
+            <div>
+              <h4 class="font-bold mb-4 border-b pb-2">Gráfico de Potencial</h4>
+              ${barrasHtml}
+            </div>
+            <div>
+              ${semaforo}
+              <div class="mt-6">
+                <h4 class="font-bold mb-2 border-b pb-2">Preguntas Sugeridas para Entrevista</h4>
+                <p class="text-sm text-muted">Basadas en las debilidades detectadas en el test:</p>
+                ${sugerenciasHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      } else {
+        popContainer.innerHTML = '<p class="text-muted">Aún no realiza la prueba o usa un formato antiguo.</p>';
+      }
+
+      // Files
+      const filesContainer = document.getElementById('m-files');
+      filesContainer.innerHTML = '';
+      if (cand.cv_url) {
+        filesContainer.innerHTML += `<a href="${cand.cv_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-pdf mr-1"></i> Currículum</a>`;
+      }
+      if (cand.proyecto200_url) {
+        filesContainer.innerHTML += `<a href="${cand.proyecto200_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-excel mr-1"></i> Proyecto 200</a>`;
+      }
+      if (cand.docs_url) {
+        filesContainer.innerHTML += `<a href="${cand.docs_url}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-folder-open mr-1"></i> Archivo ZIP (Legacy)</a>`;
+      }
+      if (cand.doc_identificacion) {
+        filesContainer.innerHTML += `<a href="${cand.doc_identificacion}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-id-card mr-1"></i> Identificación</a>`;
+      }
+      if (cand.doc_estudios) {
+        filesContainer.innerHTML += `<a href="${cand.doc_estudios}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-graduation-cap mr-1"></i> Estudios</a>`;
+      }
+      if (cand.doc_domicilio) {
+        filesContainer.innerHTML += `<a href="${cand.doc_domicilio}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-home mr-1"></i> Domicilio</a>`;
+      }
+      if (cand.doc_fiscal) {
+        filesContainer.innerHTML += `<a href="${cand.doc_fiscal}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-invoice-dollar mr-1"></i> Constancia Fiscal</a>`;
+      }
+      if (cand.doc_rfc) {
+        filesContainer.innerHTML += `<a href="${cand.doc_rfc}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-file-alt mr-1"></i> RFC</a>`;
+      }
+      if (cand.doc_curp) {
+        filesContainer.innerHTML += `<a href="${cand.doc_curp}" target="_blank" class="btn btn-outline" style="padding:0.3rem 0.8rem; font-size:0.8rem;"><i class="fas fa-id-badge mr-1"></i> CURP</a>`;
+      }
+      if (!cand.cv_url && !cand.proyecto200_url && !cand.docs_url && !cand.doc_identificacion && !cand.doc_estudios && !cand.doc_domicilio && !cand.doc_fiscal && !cand.doc_rfc && !cand.doc_curp) {
+        filesContainer.innerHTML = '<p class="text-muted">No hay archivos subidos.</p>';
+      }
+
+      // Actions
+      const actionsContainer = document.getElementById('m-actions');
+      actionsContainer.innerHTML = '';
+
+      if (cand.estadoEvaluacion !== 'rechazado') {
+        actionsContainer.innerHTML += `<button class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="changeCandidateStatus('${uid}', 'rechazar', null)">Rechazar Candidato</button>`;
+        
+        if (cand.estadoEvaluacion === 'pendiente_revision') {
+          actionsContainer.innerHTML += `<button class="btn btn-primary" onclick="changeCandidateStatus('${uid}', 'aprobar_pop', 4)">Aprobar POP (Amarillo) -> Cita</button>`;
+        }
+        
+        if (cand.etapaActual === 4 && cand.estadoEvaluacion === 'aprobado') {
+          actionsContainer.innerHTML += `<button class="btn btn-primary" onclick="changeCandidateStatus('${uid}', 'avanzar', 5)">Avanzar a Etapa 5 (Subir P.200)</button>`;
+        }
+
+        if (cand.etapaActual === 6 && cand.estadoEvaluacion === 'aprobado') {
+          actionsContainer.innerHTML += `<button class="btn btn-primary" onclick="changeCandidateStatus('${uid}', 'avanzar', 7)">Avanzar a Etapa 7 (Subir Documentación)</button>`;
+        }
+      }
+      
+      // Botón PDF
+      actionsContainer.innerHTML += `<button class="btn btn-outline" style="border-color:#3b82f6; color:#3b82f6;" onclick="downloadPDF('${cand.nombre}')"><i class="fas fa-file-pdf"></i> Descargar Reporte PDF</button>`;
+      
+      // Botón de peligro para borrar candidato de la BD y resetearlo
+      actionsContainer.innerHTML += `<div style="width:100%; border-top:1px solid rgba(0,0,0,0.1); margin-top:1rem; padding-top:1rem;">
+        <button class="btn btn-outline" style="border-color:#ef4444; color:#ef4444;" onclick="changeCandidateStatus('${uid}', 'eliminar', null)"><i class="fas fa-trash"></i> Eliminar Registro Completo (Reset)</button>
+      </div>`;
+
+      document.getElementById('candidate-modal').classList.add('active');
+    };
+
+    window.closeModal = () => {
+      document.getElementById('candidate-modal').classList.remove('active');
+    };
+
+    window.downloadPDF = (candidateName) => {
+      const element = document.getElementById('export-content');
+      const opt = {
+        margin:       0.5,
+        filename:     `Reporte_AACOM_${candidateName.replace(/\s+/g, '_')}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2 },
+        jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+      };
+      html2pdf().set(opt).from(element).save();
+    };
+
+    window.changeCandidateStatus = async (uid, action, targetStage) => {
+      if (!confirm("¿Estás seguro de realizar esta acción?")) return;
+
+      try {
+        if (action === 'eliminar') {
+          // Importar deleteDoc
+          const { deleteDoc } = await import('./firebase-config.js');
+          await deleteDoc(doc(db, "users", uid));
+          alert("Registro de candidato eliminado. Ahora puede volver a iniciar sesión y empezar desde cero.");
+          closeModal();
+          loadCandidates();
+          return;
+        }
+
+        let updates = {};
+        if (action === 'rechazar') {
+          updates = { estadoEvaluacion: 'rechazado' };
+        } else if (action === 'aprobar_pop') {
+          updates = { estadoEvaluacion: 'aprobado', etapaActual: targetStage };
+        } else if (action === 'avanzar') {
+          updates = { etapaActual: targetStage };
+        }
+
+        await updateDoc(doc(db, "users", uid), updates);
+        alert("Candidato actualizado.");
+        closeModal();
+        loadCandidates();
+      } catch (error) {
+        console.error("Error actualizando candidato:", error);
+        alert("Hubo un error al actualizar.");
+      }
+    };
+  </script>
+</body>
+</html>
