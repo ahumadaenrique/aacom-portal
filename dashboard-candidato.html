@@ -215,8 +215,15 @@
         stepDiv.className = `step ${statusClass}`;
         
         let actionHtml = '';
-        if (statusClass === 'active' && userData.estadoEvaluacion !== 'pendiente_revision') {
-          if (step.action === 'upload_cv') {
+        if (statusClass === 'active') {
+          if (userData.estadoEvaluacion === 'pendiente_revision') {
+            actionHtml = `
+              <div class="action-area" style="background: rgba(234, 179, 8, 0.08); border-radius: 0.5rem; padding: 1rem; border: 1px solid rgba(234, 179, 8, 0.25);">
+                <p class="text-sm font-bold" style="color: #b45309;"><i class="fas fa-hourglass-half mr-2"></i> Información en revisión</p>
+                <p class="text-xs text-muted mt-1">Hemos recibido tu información y nuestro equipo de atracción de talento la está evaluando. Te notificaremos en cuanto tu acceso a la siguiente etapa esté habilitado.</p>
+                <p class="text-xs mt-2" style="color: #b45309;">¿Dudas sobre tu estatus? Escríbenos por WhatsApp al <a href="https://wa.me/525515015502" target="_blank" style="text-decoration: underline; font-weight: bold;">55 1501 5502</a>.</p>
+              </div>`;
+          } else if (step.action === 'upload_cv') {
             actionHtml = `
               <div class="action-area">
                 <p class="text-sm mb-2">Por favor, sube tu CV en formato PDF.</p>
@@ -226,6 +233,10 @@
                   <button class="btn btn-primary btn-sm" onclick="uploadFile('cv-upload', 'cv_url', 3)">Enviar CV</button>
                 </div>
                 <p id="upload-status-cv" class="text-sm mt-2" style="color:var(--primary);"></p>
+                <p class="text-xs text-muted mt-3">
+                  ¿Problemas para subir tu archivo? Envíalo por WhatsApp a atracción de talento: 
+                  <a href="https://wa.me/525515015502?text=Hola,%20adjunto%20mi%20CV%20para%20el%20proceso%20de%20selecci%C3%B3n%20AACOM" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: underline;"><i class="fab fa-whatsapp"></i> 55 1501 5502</a>
+                </p>
               </div>`;
           } else if (step.action === 'take_test') {
             actionHtml = `
@@ -242,6 +253,10 @@
                   <button class="btn btn-primary btn-sm" onclick="uploadFile('excel-upload', 'proyecto200_url', 6)">Enviar Proyecto</button>
                 </div>
                 <p id="upload-status-excel" class="text-sm mt-2" style="color:var(--primary);"></p>
+                <p class="text-xs text-muted mt-3">
+                  ¿Problemas para subir tu archivo? Envíalo por WhatsApp: 
+                  <a href="https://wa.me/525515015502?text=Hola,%20adjunto%20mi%20Proyecto%20200%20para%20el%20proceso%20AACOM" target="_blank" style="color: var(--primary); font-weight: bold; text-decoration: underline;"><i class="fab fa-whatsapp"></i> 55 1501 5502</a>
+                </p>
               </div>`;
           } else if (step.action === 'upload_docs') {
             const isUploaded = (field) => userData[field] ? '<span class="text-primary font-bold"><i class="fas fa-check-circle mr-1"></i> Guardado</span>' : '<span class="text-muted"><i class="fas fa-clock mr-1"></i> Pendiente</span>';
@@ -347,6 +362,11 @@
                 <button class="btn btn-primary" onclick="window.location.href='bienvenida.html'">Continuar <i class="fas fa-arrow-right ml-2"></i></button>
               </div>`;
           }
+        } else if (step.id > currentStep) {
+          actionHtml = `
+            <div class="mt-2 text-xs text-muted" style="opacity: 0.8;">
+              <i class="fas fa-lock mr-1"></i> Se desbloqueará al completar y validar la Etapa ${step.id - 1}.
+            </div>`;
         }
 
         stepDiv.innerHTML = `
@@ -367,7 +387,9 @@
     // Global function for uploading files
     window.uploadFile = async (inputId, dbField, nextStep) => {
       const fileInput = document.getElementById(inputId);
-      const statusP = document.getElementById('upload-status-' + inputId.split('-')[0]);
+      const prefix = inputId.split('-')[0];
+      const statusP = document.getElementById('upload-status-' + prefix);
+      const btn = event && event.target ? event.target : null;
       
       if (!fileInput.files.length) {
         alert("Por favor selecciona un archivo primero.");
@@ -375,7 +397,9 @@
       }
       
       const file = fileInput.files[0];
-      statusP.textContent = "Subiendo archivo... por favor espera.";
+      if (btn) btn.disabled = true;
+      statusP.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Subiendo archivo... por favor espera.';
+      statusP.style.color = "var(--primary)";
       
       try {
         const fileRef = ref(storage, `candidatos/${currentUser.uid}/${inputId}_${file.name}`);
@@ -384,23 +408,23 @@
         
         const updateData = { etapaActual: nextStep };
         updateData[dbField] = url;
-
-        // Si sube Proyecto 200 o Documentación, podemos dejarlo en pendiente de revisión o avanzar directo.
-        // El prompt dice que avanzar de etapa requiere aprobación manual en ciertas etapas.
-        // Aquí pasamos a la siguiente etapa pero la etapa siguiente podría ser la de espera.
-        // Dejaremos que simplemente avance por ahora, o cambiaremos el estado a "pendiente_revision".
         
         await updateDoc(doc(db, "users", currentUser.uid), updateData);
         
-        statusP.textContent = "¡Archivo subido exitosamente!";
+        statusP.innerHTML = '<i class="fas fa-check-circle mr-1"></i> ¡Archivo subido exitosamente! Actualizando...';
         setTimeout(() => {
           window.location.reload();
-        }, 1500);
+        }, 1200);
 
       } catch (error) {
-        console.error(error);
-        statusP.textContent = "Error al subir el archivo: " + error.message;
+        console.error("Storage upload error:", error);
+        if (btn) btn.disabled = false;
         statusP.style.color = "#ef4444";
+        if (error.code === 'storage/unauthorized') {
+          statusP.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> No se pudo subir el archivo por permisos en el servidor. Por favor, <b>envíalo por WhatsApp al 55 1501 5502</b>.';
+        } else {
+          statusP.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Hubo un inconveniente al subir el archivo. Por favor envíalo por WhatsApp al <b>55 1501 5502</b>.';
+        }
       }
     };
     // Global function for uploading individual documents for stage 7
@@ -430,8 +454,8 @@
         
         statusDiv.innerHTML = '<span class="text-primary font-bold"><i class="fas fa-check mr-1"></i> Subido con éxito</span>';
       } catch (error) {
-        console.error(error);
-        statusDiv.innerHTML = `<span style="color: #ef4444;">Error: ${error.message}</span>`;
+        console.error("Storage single doc upload error:", error);
+        statusDiv.innerHTML = `<span style="color: #ef4444;"><i class="fas fa-exclamation-triangle mr-1"></i> Error al subir. Envíalo por WhatsApp al <b>55 1501 5502</b>.</span>`;
       }
     };
 
